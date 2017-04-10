@@ -1,6 +1,5 @@
-//added something
 void setup(){
-
+//Added something also.
 }
 void loop(){
 
