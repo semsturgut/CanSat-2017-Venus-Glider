@@ -4,6 +4,8 @@
 #include <SD.h>
 #include <SPI.h>
 #include <SFE_BMP180.h>
+int count;
+String con_data;
 
 Servo myservo;
 
@@ -29,9 +31,8 @@ void setup() {
 }
 
 void loop() {
-servoOpen();
-delay(1000);
-servoClose();
-delay(1000);
+  count++;
+  con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(getTime()) + ',' + String(count) + ',' + String() + ',' + String("27.13") + ',' + String(getVoltage()) + ',' + String("1") ;
+  Serial.println (con_data);
+  delay(1000);
 }
-
