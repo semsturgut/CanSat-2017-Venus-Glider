@@ -22,12 +22,12 @@ void check_Modules() {
         }
 }
 
-float getVoltage() {
-        float R2 = 1000.0, R1 = 10000.0;
-        float Vout = 0.0;
-        float Vin = 0.0;
+double getVoltage() {
+        double R2 = 1000.0, R1 = 10000.0;
+        double Vout = 0.0;
+        double Vin = 0.0;
         int sensorValue = analogRead(A0);
-        // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+        // Convert the analo reading (which goes from 0 - 1023) to a voltage (0 - 5V):
         Vout = sensorValue * (5.0 / 1023.0);
         // voltage divider uzerinden giris gerilimi hesaplama
         Vin = Vout * ((R2 + R1) / R2);
@@ -81,22 +81,7 @@ void saveSD(String data_t) {
 }
 
 //@@BMP side start
-byte readMag(int reg) {
-        Wire.beginTransmission(0x0C);
-        Wire.write(reg);
-        Wire.endTransmission(false);
-        Wire.requestFrom(0x0C, 1, false); // talep edilen data verisi
-        byte val = Wire.read();
-        Wire.endTransmission(true);
-        return val;
-}
 
-void writeMag(int reg, int data) {
-        Wire.beginTransmission(0x0C);
-        Wire.write(reg);
-        Wire.write(data);
-        Wire.endTransmission(true);
-}
 byte read(int reg) {
         Wire.beginTransmission(0x68); // 0x68 sensor adresine veri transferi baslar
         Wire.write(reg);
@@ -113,52 +98,49 @@ void write(int reg, int data) {
         Wire.write(data);
         Wire.endTransmission(true);
 }
-double getPressure() {
-        char status;
-        double T, P, p0, a;
 
-        // Sıcaklık olcumu baslar
-        // eger istek basariliysa, olculen deger geri doner
-        // eger istek basarisizsa, 0 doner.
+// Basinc sensorunden alinan degerler ile yukseklik olcumu
+double getAltitude() {
+        double alt,press;
+        press = getPressure();
+        alt = pressure.altitude(press,baseline); // Metre cinsinden deger doner
+        return alt;
+}
+
+double getTemperature() {
+        char status;
+        double T;
 
         status = pressure.startTemperature();
         if (status != 0) {
                 delay(status);
-
-                // Retrieve the completed temperature measurement:
-                // Note that the measurement is stored in the variable T.
-                // Use '&T' to provide the address of T to the function.
-                // Function returns 1 if successful, 0 if failure.
-
                 status = pressure.getTemperature(T);
                 if (status != 0) {
-                        // Start a pressure measurement:
-                        // The parameter is the oversampling setting, from 0 to 3 (highest res, longest wait).
-                        // If request is successful, the number of ms to wait is returned.
-                        // If request is unsuccessful, 0 is returned.
-
-                        status = pressure.startPressure(3);
-                        if (status != 0) {
-                                // Wait for the measurement to complete:
-                                delay(status);
-
-                                // Retrieve the completed pressure measurement:
-                                // Note that the measurement is stored in the variable P.
-                                // Use '&P' to provide the address of P.
-                                // Note also that the function requires the previous temperature measurement (T).
-                                // (If temperature is stable, you can do one temperature measurement for a number of pressure measurements.)
-                                // Function returns 1 if successful, 0 if failure.
-
-                                status = pressure.getPressure(P, T);
-                                if (status != 0) {
-                                        return (P);
-                                }
-                                else Serial.println("error retrieving pressure measurement\n");
-                        }
-                        else Serial.println("error starting pressure measurement\n");
+                        return T;
+                } else {
+                        Serial.println("ERR:GETTEMP");
+                        return -1;
                 }
-                else Serial.println("error retrieving temperature measurement\n");
+        } else {
+                Serial.println("ERR:STARTTEMP");
+                return -1;
         }
-        else Serial.println("error starting temperature measurement\n");
+
+
+}
+
+double getPressure() {
+        char status;
+        double T, P;
+        status = pressure.startPressure(3);
+        if (status != 0) {
+                delay(status);
+                status = pressure.getPressure(P, T);
+                if (status != 0) {
+                        return (P);
+                }
+                else Serial.println("ERR:RETPRESS");
+        }
+        else Serial.println("ERR:STARTPRESS");
 }
 //@@BMP side end

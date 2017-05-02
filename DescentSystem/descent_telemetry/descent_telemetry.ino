@@ -14,7 +14,7 @@ int buzzerPin = 8;
 RTC_DS1307 RTC;
 File LOG_TELEMETRY;
 SFE_BMP180 pressure;
-double baseline;
+double baseline; // BMP sensor degerlerinin olcumu icin
 
 void setup() {
         Serial.begin(9600);
@@ -27,7 +27,6 @@ void setup() {
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x6A, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali
         write(0x37, 0x02); //Bypass modu acik
-        writeMag(0x0A, 0x12); // surekli olcebilmek icin manyetik sensor registeri
 }
 
 void loop() {
