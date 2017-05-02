@@ -22,20 +22,18 @@ void check_Modules() {
         }
 }
 
-// Voltaj degerini olcuyor
 double getVoltage() {
         double R2 = 1000.0, R1 = 10000.0;
         double Vout = 0.0;
         double Vin = 0.0;
-        int sensorValue = analogRead(A0);
+        int sensorValue = analogRead(A1);
         // Convert the analo reading (which goes from 0 - 1023) to a voltage (0 - 5V):
         Vout = sensorValue * (5.0 / 1023.0);
         // voltage divider uzerinden giris gerilimi hesaplama
         Vin = Vout * ((R2 + R1) / R2);
         return Vin;
 }
-
-// Servoyu ac
+//servonun acik pozisyondaki kontrolu//
 void servoOpen () {
         if (myservo.read() < 160) //160 derecen kucuk oldugu konumundan cagiracak.
         {
@@ -46,8 +44,7 @@ void servoOpen () {
                 }
         }
 }
-
-// Servoyu kapat
+//servonun kapali pozisyondaki kontrolu//
 void servoClose() {
         if (myservo.read() > 160) // 160 dereceden buyuk oldugu konumdan cagiracak.
                 for (pos = 180; pos >= 1; pos -= 1) // Servo 'kapat'den 'ac' pozisyonuna 180 derece donecek.
@@ -67,7 +64,6 @@ void buzzerOff () {
         noTone (buzzerPin);
 }
 
-//Telemetry datalarini sd karta kaydediyor
 void saveSD(String data_t) {
         // open the file. note that only one file can be open at a time,
         // so you have to close this one before opening another.
@@ -105,13 +101,12 @@ void write(int reg, int data) {
 
 // Basinc sensorunden alinan degerler ile yukseklik olcumu
 double getAltitude() {
-        double alt,press;
+        double alt, press;
         press = getPressure(); // Basinc degeri fonksiyondan cagiriliyor.
-        alt = pressure.altitude(press,baseline); // Metre cinsinden deger doner
+        alt = pressure.altitude(press, baseline); // Metre cinsinden deger doner
         return alt; // Yukseklik degeri metre cinsinden fonksiyona donduruluyor.
 }
 
-// Sicaklik degerlerini olcuyor
 double getTemperature() {
         char status;
         double T;
@@ -131,9 +126,9 @@ double getTemperature() {
                 return -1;
         }
 
+
 }
 
-// Basinc degerlerini olcuyor
 double getPressure() {
         char status;
         double T, P;
@@ -149,3 +144,13 @@ double getPressure() {
         else Serial.println("ERR:STARTPRESS");
 }
 //@@BMP side end
+
+//ortamin aydinlik mi karanlik mi oldugunu anlayan fonksiyon
+int check_light () {
+        ldr = analogRead(sensorPin);
+        if (ldr < 20) { // 20 den kucukse ortam karanliktir 0 gonderir
+                return 0;
+        } else { //20 den buyukse ortam aydinlik 1 gönderir
+                return 1;
+        }
+}
