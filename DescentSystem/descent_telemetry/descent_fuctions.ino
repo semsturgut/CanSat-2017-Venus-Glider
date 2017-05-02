@@ -102,21 +102,21 @@ void write(int reg, int data) {
 // Basinc sensorunden alinan degerler ile yukseklik olcumu
 double getAltitude() {
         double alt,press;
-        press = getPressure();
+        press = getPressure(); // Basinc degeri fonksiyondan cagiriliyor.
         alt = pressure.altitude(press,baseline); // Metre cinsinden deger doner
-        return alt;
+        return alt; // Yukseklik degeri metre cinsinden fonksiyona donduruluyor.
 }
 
 double getTemperature() {
         char status;
         double T;
 
-        status = pressure.startTemperature();
+        status = pressure.startTemperature(); // Sicaklik degeri alma islemi baslatiliyor
         if (status != 0) {
                 delay(status);
-                status = pressure.getTemperature(T);
+                status = pressure.getTemperature(T); // Sicaklik degeri aliniyor
                 if (status != 0) {
-                        return T;
+                        return T; // Sicaklik degeri fonksiyona donduruluyor.
                 } else {
                         Serial.println("ERR:GETTEMP");
                         return -1;
@@ -132,12 +132,12 @@ double getTemperature() {
 double getPressure() {
         char status;
         double T, P;
-        status = pressure.startPressure(3);
+        status = pressure.startPressure(3); // Basinc degeri alma islemi baslatiliyor
         if (status != 0) {
                 delay(status);
-                status = pressure.getPressure(P, T);
+                status = pressure.getPressure(P, T); // Basinc degeri aliniyor
                 if (status != 0) {
-                        return (P);
+                        return (P); // Basinc degeri fonksiyona donduruluyor.
                 }
                 else Serial.println("ERR:RETPRESS");
         }

@@ -31,7 +31,7 @@ void setup() {
 
 void loop() {
         count++;
-        con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(getTime()) + ',' + String(count) + ',' + String() + ',' + String("27.13") + ',' + String(getVoltage()) + ',' + String("1");
+        con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(getTime()) + ',' + String(count) + ',' + String(getAltitude()) + ',' + String(getTemperature()) + ',' + String(getVoltage()) + ',' + String("1");
         Serial.println (con_data);
         delay(1000);
 }
