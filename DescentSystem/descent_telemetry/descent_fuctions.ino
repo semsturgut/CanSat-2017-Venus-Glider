@@ -22,6 +22,7 @@ void check_Modules() {
         }
 }
 
+// Voltaj degerini olcuyor
 double getVoltage() {
         double R2 = 1000.0, R1 = 10000.0;
         double Vout = 0.0;
@@ -33,7 +34,8 @@ double getVoltage() {
         Vin = Vout * ((R2 + R1) / R2);
         return Vin;
 }
-//servonun acik pozisyondaki kontrolu//
+
+// Servoyu ac
 void servoOpen () {
         if (myservo.read() < 160) //160 derecen kucuk oldugu konumundan cagiracak.
         {
@@ -44,7 +46,8 @@ void servoOpen () {
                 }
         }
 }
-//servonun kapali pozisyondaki kontrolu//
+
+// Servoyu kapat
 void servoClose() {
         if (myservo.read() > 160) // 160 dereceden buyuk oldugu konumdan cagiracak.
                 for (pos = 180; pos >= 1; pos -= 1) // Servo 'kapat'den 'ac' pozisyonuna 180 derece donecek.
@@ -64,6 +67,7 @@ void buzzerOff () {
         noTone (buzzerPin);
 }
 
+//Telemetry datalarini sd karta kaydediyor
 void saveSD(String data_t) {
         // open the file. note that only one file can be open at a time,
         // so you have to close this one before opening another.
@@ -107,6 +111,7 @@ double getAltitude() {
         return alt; // Yukseklik degeri metre cinsinden fonksiyona donduruluyor.
 }
 
+// Sicaklik degerlerini olcuyor
 double getTemperature() {
         char status;
         double T;
@@ -126,9 +131,9 @@ double getTemperature() {
                 return -1;
         }
 
-
 }
 
+// Basinc degerlerini olcuyor
 double getPressure() {
         char status;
         double T, P;
