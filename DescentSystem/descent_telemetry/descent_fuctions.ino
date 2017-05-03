@@ -1,7 +1,7 @@
 //Saat fonksiyonu
 String getTime() {
-  DateTime now = RTC.now();
-  String time_n = String(now.hour(), DEC) + ':' + String(now.minute(), DEC) + ':' + String(now.second(), DEC);
+   RTC.getTime(); // Saat ve Tarih verilerini al
+  String time_n = String(RTC.hour, DEC) + ':' + String(RTC.minute, DEC) + ':' + String(RTC.second, DEC);
   Serial.println(time_n);
   return time_n;
 }
@@ -11,10 +11,9 @@ void check_Modules() {
   if (!pressure.begin()) {
     Serial.println("ERR:BMP180");
   }
-  else if (!RTC.isrunning()) {
+  else if (!RTC.year) { //RTC check islemine farkli bir algoritma yapilacaktir.
     Serial.println("ERR:RTC");
-    // following line sets the RTC to the date & time this sketch was compiled
-    // RTC.adjust(DateTime(__DATE__, __TIME__));
+    
   }
   else if (!SD.begin(4)) {
     Serial.println("ERR:SD");
