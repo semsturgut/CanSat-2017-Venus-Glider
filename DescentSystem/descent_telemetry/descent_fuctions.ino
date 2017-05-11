@@ -1,4 +1,4 @@
-//Saat fonksiyonu
+// Saat fonksiyonu saat:dakika:saniye degeri string olarak geri donuyor
 String getTime() {
         RTC.getTime(); // Saat ve Tarih verilerini al
         String time_n = String(RTC.hour, DEC) + ':' + String(RTC.minute, DEC) + ':' + String(RTC.second, DEC);
@@ -6,24 +6,31 @@ String getTime() {
         return time_n;
 }
 
-//Moduller calisiyor mu diye test ediliyor.
+// Moduller calisiyor mu diye test ediliyor.
 void check_Modules() {
         if (!pressure.begin()) {
-                Serial.println("ERR:BMP180");
+                Serial.println("ERR:BMP");
         }
-        else if (!RTC.year) { //RTC check islemine farkli bir algoritma yapilacaktir.
+        if (!RTC.year) { //RTC check islemine farkli bir algoritma yapilacaktir.
                 Serial.println("ERR:RTC");
-
         }
-        else if (!SD.begin(4)) {
+        if (!SD.begin(4)) {
                 Serial.println("ERR:SD");
-        } else {
-                Serial.println("Sensors are OK");
+        }
+        if (!getVoltage()) {
+                Serial.println("ERR:VLT");
+        }
+        if (!lid_servo.read()) {
+                Serial.println("ERR:SRV");
+        }
+        if (analogRead(ldrPin)) {
+                Serial.println("ERR:LDR");
         }
 }
 
+// Voltage divider a gore analog voltage okuma
 double getVoltage() {
-        double R2 = 1000.0, R1 = 10000.0;
+        double R1 = 9710.0, R2 = 9360.0;
         double Vout = 0.0;
         double Vin = 0.0;
         int sensorValue = analogRead(A1);
@@ -31,39 +38,46 @@ double getVoltage() {
         Vout = sensorValue * (5.0 / 1023.0);
         // voltage divider uzerinden giris gerilimi hesaplama
         Vin = Vout * ((R2 + R1) / R2);
-        return Vin;
+        //Analog giristen veri okuyabiliyorsa hesaplanan degeri geri dondur
+        if(sensorValue) {
+                return Vin;
+        } else {
+                return -1;
+        }
 }
-//servonun acik pozisyondaki kontrolu//
+
+// Servonun acik pozisyondaki kontrolu ve acik degil ise servoyu ac
 void servoOpen () {
-        if (myservo.read() < 160) //160 derecen kucuk oldugu konumundan cagiracak.
-        {
-                for (pos = 0; pos < 180; pos += 1) // Servo 'ac'dan 'kapat' pozisyonuna 180 derece donecek.
-                { // 1 derecelik adimlarla
-                        myservo.write(pos); // Belirlenen pozisyona gitmesi isteniyor.
+        if (lid_servo.read() < 160) { //160 derecen kucuk oldugu konumundan cagiracak.
+                // 1 derecelik adimlarla
+                for (pos = 1; pos < 180; pos += 1) { // Servo 'ac'dan 'kapat' pozisyonuna 180 derece donecek.
+                        lid_servo.write(pos); // Belirlenen pozisyona gitmesi isteniyor.
                         delay(10); // Pozisyona 10 ms de ulasiyor.
                 }
         }
 }
-//servonun kapali pozisyondaki kontrolu//
+
+// Servonun kapali pozisyondaki kontrolu ve kapali degil ise kapat
 void servoClose() {
-        if (myservo.read() > 160) // 160 dereceden buyuk oldugu konumdan cagiracak.
-                for (pos = 180; pos >= 1; pos -= 1) // Servo 'kapat'den 'ac' pozisyonuna 180 derece donecek.
-                {
-                        myservo.write(pos); // Belirlenen pozisyona gitmesi isteniyor.
+        if (lid_servo.read() > 160) { // 160 dereceden buyuk oldugu konumdan cagiracak.
+                for (pos = 180; pos >= 1; pos -= 1) { // Servo 'kapat'den 'ac' pozisyonuna 180 derece donecek.
+                        lid_servo.write(pos); // Belirlenen pozisyona gitmesi isteniyor.
                         delay(10); // Pozisyona 10 ms de ulasiyor
                 }
+        }
 }
 
-//Buzzer i acip tonunu 261 e ayarliyor.
+// Buzzer i acip tonunu 261 e ayarliyor.
 void buzzerOn () {
         tone(buzzerPin, 261);
 }
 
-//Buzzeri kapatiyor.
+// Buzzeri kapatiyor.
 void buzzerOff () {
-        noTone (buzzerPin);
+        noTone(buzzerPin);
 }
 
+// SD karta veri kayit ediyor.
 void saveSD(String data_t) {
         // open the file. note that only one file can be open at a time,
         // so you have to close this one before opening another.
@@ -73,10 +87,10 @@ void saveSD(String data_t) {
                 LOG_TELEMETRY.println(data_t);
                 // close the file:
                 LOG_TELEMETRY.close();
-                Serial.println(data_t);
+                //Serial.println(data_t);
         } else {
                 // if the file didn't open, print an error:
-                Serial.println("error");
+                Serial.println("ERR:SDWR");
         }
 }
 
@@ -104,9 +118,15 @@ double getAltitude() {
         double alt, press;
         press = getPressure(); // Basinc degeri fonksiyondan cagiriliyor.
         alt = pressure.altitude(press, baseline); // Metre cinsinden deger doner
-        return alt; // Yukseklik degeri metre cinsinden fonksiyona donduruluyor.
+        //Yukseklik degeri alabiliyorsa geri dondur.
+        if (alt) {
+                return alt; // Yukseklik degeri metre cinsinden fonksiyona donduruluyor.
+        } else {
+                return -1;
+        }
 }
 
+// Sicaklik degeri aliniyor. Hata alinirsa -1 degeri donuyor.
 double getTemperature() {
         char status;
         double T;
@@ -114,6 +134,7 @@ double getTemperature() {
         status = pressure.startTemperature(); // Sicaklik degeri alma islemi baslatiliyor
         if (status != 0) {
                 delay(status);
+                Serial.println(status);
                 status = pressure.getTemperature(T); // Sicaklik degeri aliniyor
                 if (status != 0) {
                         return T; // Sicaklik degeri fonksiyona donduruluyor.
@@ -129,6 +150,7 @@ double getTemperature() {
 
 }
 
+// Basinc degerlerini alma islemi
 double getPressure() {
         char status;
         double T, P;
@@ -147,7 +169,7 @@ double getPressure() {
 
 //ortamin aydinlik mi karanlik mi oldugunu anlayan fonksiyon
 int check_light () {
-        ldr = analogRead(sensorPin);
+        ldr = analogRead(ldrPin);
         if (ldr < 20) { // 20 den kucukse ortam karanliktir 0 gonderir
                 return 0;
         } else { //20 den buyukse ortam aydinlik 1 gönderir
@@ -155,10 +177,59 @@ int check_light () {
         }
 }
 
+// count degiskenini eepromdan cekme islemi
 int getCount() {
         return EEPROM.read(0);
 }
 
+// count degiskenini eeproma yazma islemi
 void upCount(int up_count) {
         EEPROM.update(0,up_count);
+}
+
+// software state durumunu gelen degerlere gore yazilim verilerinin dogrulugu kontrolu
+int softState(String s_time, double s_alt, double s_temp, double s_volt) {
+        if (s_alt != -1 || s_temp != -1 || s_volt != -1) {
+                return 0;
+        } else {
+                return 1;
+        }
+}
+
+// Yedek acilma sistemi: gunesi gordugu anda parasut acilma suresini
+// hesaba katip o hesaba gore 400 metreye ulasma suresini hesapliyor.
+// dist_X Container'dan ayrildigi anda ki yukseklik
+void descentB(float dist_X) {
+        float grav = 9.81;
+        long previousMillis = 0;
+        float dist_Y = 390; //
+        float time_X = 3.00, time_Y; //Parasut acilana kadar gecen sure
+
+        time_Y = ((dist_X - (grav * pow(time_X, 2) / 2) - dist_Y) / 10.87)*1000;
+
+        // ardunio calisma suresi milisaniye cinsinden sayiyor.
+        unsigned long currentMillis = millis();
+        // eger onceki zamanla simdiki zaman arasindaki fark 400m ye
+        // gelene kadar gecen sureden buyuk ise servo acilacak.
+        if (currentMillis - previousMillis > time_Y) {
+                previousMillis = currentMillis;
+                servoOpen();
+        }
+
+}
+
+// fonksiyon basladiktan 2 saniye sonra veriyi gondermeyi durdurmak icin
+// sonsuz donguye giriyor ve yukseklik 20m nin altina inince buzzer aciliyor.
+// 2 saniyeden servo acilis suresini cikardik
+void wait2secs() {
+        long previousMillis = 0;
+        unsigned long currentMillis = millis();
+        if (currentMillis - previousMillis > 1820) {
+                previousMillis = currentMillis;
+                while (1) {
+                        if (getAltitude() < 20) {
+                                buzzerOn ();
+                        }
+                }
+        }
 }
