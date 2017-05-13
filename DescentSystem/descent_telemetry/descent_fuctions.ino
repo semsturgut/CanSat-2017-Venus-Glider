@@ -2,29 +2,29 @@
 String getTime() {
         RTC.getTime(); // Saat ve Tarih verilerini al
         String time_n = String(RTC.hour, DEC) + ':' + String(RTC.minute, DEC) + ':' + String(RTC.second, DEC);
-        //Serial.println(time_n);
+        //telemetry.println(time_n);
         return time_n;
 }
 
 // Moduller calisiyor mu diye test ediliyor.
 void check_Modules() {
         if (!pressure.begin()) {
-                Serial.println("ERR:BMP");
+                telemetry.println("ERR:BMP");
         }
         if (!RTC.year) { //RTC check islemine farkli bir algoritma yapilacaktir.
-                Serial.println("ERR:RTC");
+                telemetry.println("ERR:RTC");
         }
         if (!SD.begin(4)) {
-                Serial.println("ERR:SD");
+                telemetry.println("ERR:SD");
         }
         if (!getVoltage()) {
-                Serial.println("ERR:VLT");
+                telemetry.println("ERR:VLT");
         }
         if (!lid_servo.read()) {
-                Serial.println("ERR:SRV");
+                telemetry.println("ERR:SRV");
         }
         if (analogRead(ldrPin)) {
-                Serial.println("ERR:LDR");
+                telemetry.println("ERR:LDR");
         }
 }
 
@@ -87,10 +87,10 @@ void saveSD(String data_t) {
                 LOG_TELEMETRY.println(data_t);
                 // close the file:
                 LOG_TELEMETRY.close();
-                //Serial.println(data_t);
+                //telemetry.println(data_t);
         } else {
                 // if the file didn't open, print an error:
-                Serial.println("ERR:SDWR");
+                //telemetry.println("ERR:SDWR");
         }
 }
 
@@ -134,16 +134,15 @@ double getTemperature() {
         status = pressure.startTemperature(); // Sicaklik degeri alma islemi baslatiliyor
         if (status != 0) {
                 delay(status);
-                Serial.println(status);
                 status = pressure.getTemperature(T); // Sicaklik degeri aliniyor
                 if (status != 0) {
                         return T; // Sicaklik degeri fonksiyona donduruluyor.
                 } else {
-                        Serial.println("ERR:GETTEMP");
+                        telemetry.println("ERR:GETTEMP");
                         return -1;
                 }
         } else {
-                Serial.println("ERR:STARTTEMP");
+                telemetry.println("ERR:STARTTEMP");
                 return -1;
         }
 
@@ -161,9 +160,9 @@ double getPressure() {
                 if (status != 0) {
                         return (P); // Basinc degeri fonksiyona donduruluyor.
                 }
-                else Serial.println("ERR:RETPRESS");
+                else telemetry.println("ERR:RETPRESS");
         }
-        else Serial.println("ERR:STARTPRESS");
+        else telemetry.println("ERR:STARTPRESS");
 }
 //@@BMP side end
 

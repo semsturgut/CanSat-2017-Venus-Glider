@@ -5,11 +5,12 @@
 #include <SPI.h>
 #include <SFE_BMP180.h>
 #include <EEPROM.h>
+#include <SoftwareSerial.h>
 
+SoftwareSerial telemetry(1,0);
 //@@@ Duzenlenecekler
 //1. RTC check_Modules kontrolu eklenecek
 //2. softState kismina RTC de zaman farki var mi yok mu kontrolu eklenecek
-
 
 // Butun SubFunction lar
 String getTime();
@@ -38,8 +39,8 @@ uint16_t TimeIsSet = 0xaa55;            // Saatin tekrar ayarlanmamasına yardı
 
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
 int pos = 1;
-int buzzerPin = 8;
-int servoPin = 9;
+int buzzerPin = 9;
+int servoPin = 3;
 File LOG_TELEMETRY;
 SFE_BMP180 pressure;
 double baseline; // BMP sensor degerlerinin olcumu icin
@@ -58,9 +59,9 @@ double fall_alt;
 int count = 1;
 int ldr_count = 0;
 
-
 void setup() {
-        Serial.begin(9600);
+        //Serial.begin(4800);
+        telemetry.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         RTC.setRAM(0, (uint8_t *)&startAddr, sizeof(uint16_t)); // Store startAddr in NV-RAM address 0x08
         RTC.getRAM(54, (uint8_t *)&TimeIsSet, sizeof(uint16_t));
@@ -89,12 +90,16 @@ void loop() {
                 temperature = getTemperature();
                 voltage = getVoltage();
                 softwarestate = softState(time_now, alt1tude, temperature, voltage);
-                con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(time_now) + ',' +
-                           String(count) + ',' + String(alt1tude) + ',' + String(temperature) + ',' +
-                           String(voltage) + ',' + String(softwarestate);
+                con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(time_now) + ',';
+                String con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(temperature) + ',';
+                String con_data2 = String(voltage) + ',' + String(softwarestate);
 
                 // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor.
-                Serial.println(con_data);
+                telemetry.print(con_data);
+                delay(10);
+                telemetry.print(con_data1);
+                delay(10);
+                telemetry.println(con_data2);
                 saveSD(con_data);
 
                 // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
@@ -110,7 +115,7 @@ void loop() {
                         wait2secs();
                 }
                 upCount(count);
-                delay(1000);
+                delay(980);
                 count++;
         }
 }
