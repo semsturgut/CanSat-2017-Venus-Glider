@@ -38,19 +38,20 @@ uint16_t lastAddr;                      // NV-RAM'de saklamak için yeni adres
 uint16_t TimeIsSet = 0xaa55;            // Saatin tekrar ayarlanmamasına yardımcı olur.
 
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
-int pos = 1;
+int pos;
 int buzzerPin = 9;
 int servoPin = 3;
 File LOG_TELEMETRY;
 SFE_BMP180 pressure;
 double baseline; // BMP sensor degerlerinin olcumu icin
 Servo lid_servo;
-int ldrPin = A0;
+int voltPin = A0;
+int ldrPin = A1;
 int ldr;
 
 // Veri gonderimi ve veri durumu gozetlenmesi icin tanimlanan degiskenler
 String time_now;
-String con_data;
+String con_data, con_data1, con_data2;
 double alt1tude;
 double temperature;
 double voltage;
@@ -60,14 +61,14 @@ int count = 1;
 int ldr_count = 0;
 
 void setup() {
-        //Serial.begin(4800);
+        Serial.begin(19200);
         telemetry.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         RTC.setRAM(0, (uint8_t *)&startAddr, sizeof(uint16_t)); // Store startAddr in NV-RAM address 0x08
         RTC.getRAM(54, (uint8_t *)&TimeIsSet, sizeof(uint16_t));
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
-        servoClose();
-        pressure.begin();
+        servoClose(); // servoyu kapali konuma getirir.
+        pressure.begin(); // bmp sensorunu baslatir
         baseline = getPressure();
         check_Modules();
         count = getCount();
@@ -84,6 +85,7 @@ void loop() {
         }
         // ldr count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
         if (ldr_count) {
+                count++;
                 // Butun sensor verilerini alip telemetri formatiyla birlikte string e ceviriyor
                 time_now = getTime();
                 alt1tude = getAltitude();
@@ -91,17 +93,20 @@ void loop() {
                 voltage = getVoltage();
                 softwarestate = softState(time_now, alt1tude, temperature, voltage);
                 con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(time_now) + ',';
-                String con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(temperature) + ',';
-                String con_data2 = String(voltage) + ',' + String(softwarestate);
+                con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(temperature) + ',';
+                con_data2 = String(voltage) + ',' + String(softwarestate);
 
-                // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor.
+                // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
                 telemetry.print(con_data);
+                //Serial.print(con_data);
                 delay(10);
                 telemetry.print(con_data1);
+                //Serial.print(con_data1);
                 delay(10);
                 telemetry.println(con_data2);
-                saveSD(con_data);
-
+                //Serial.println(con_data2);
+                upCount(count); // count degerini EEPROM a yaziyor
+                saveSD(con_data+con_data1+con_data2); // butun telemetri versini SD karta kaydediyo.
                 // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
                 // ya da sadece 100 metrenin uzerinde oldugu zaman millis iceren ikinci ayrilma fonksiyonunu calistir
                 if (getAltitude() > 100 && getAltitude() < 410) {
@@ -114,8 +119,6 @@ void loop() {
                 if (lid_servo.read() > 160) {
                         wait2secs();
                 }
-                upCount(count);
                 delay(980);
-                count++;
         }
 }

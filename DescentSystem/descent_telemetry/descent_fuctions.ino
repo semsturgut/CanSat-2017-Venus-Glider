@@ -3,6 +3,7 @@ String getTime() {
         RTC.getTime(); // Saat ve Tarih verilerini al
         String time_n = String(RTC.hour, DEC) + ':' + String(RTC.minute, DEC) + ':' + String(RTC.second, DEC);
         //telemetry.println(time_n);
+        Serial.println(time_n);
         return time_n;
 }
 
@@ -10,21 +11,27 @@ String getTime() {
 void check_Modules() {
         if (!pressure.begin()) {
                 telemetry.println("ERR:BMP");
+                //Serial.println("ERR:BMP");
         }
         if (!RTC.year) { //RTC check islemine farkli bir algoritma yapilacaktir.
                 telemetry.println("ERR:RTC");
+                //Serial.println("ERR:RTC");
         }
         if (!SD.begin(4)) {
                 telemetry.println("ERR:SD");
+                //Serial.println("ERR:SD");
         }
         if (!getVoltage()) {
                 telemetry.println("ERR:VLT");
+                //Serial.println("ERR:VLT");
         }
         if (!lid_servo.read()) {
                 telemetry.println("ERR:SRV");
+                //Serial.println("ERR:SRV");
         }
         if (analogRead(ldrPin)) {
                 telemetry.println("ERR:LDR");
+                //Serial.println("ERR:LDR");
         }
 }
 
@@ -33,7 +40,7 @@ double getVoltage() {
         double R1 = 9710.0, R2 = 9360.0;
         double Vout = 0.0;
         double Vin = 0.0;
-        int sensorValue = analogRead(A1);
+        int sensorValue = analogRead(voltPin);
         // Convert the analo reading (which goes from 0 - 1023) to a voltage (0 - 5V):
         Vout = sensorValue * (5.0 / 1023.0);
         // voltage divider uzerinden giris gerilimi hesaplama
@@ -48,9 +55,9 @@ double getVoltage() {
 
 // Servonun acik pozisyondaki kontrolu ve acik degil ise servoyu ac
 void servoOpen () {
-        if (lid_servo.read() < 160) { //160 derecen kucuk oldugu konumundan cagiracak.
+        if (lid_servo.read() == 100) { //100 derece stok kapali konum anlamina geliyor. 93 ise kapalidir ve acilis konuma girer
                 // 1 derecelik adimlarla
-                for (pos = 1; pos < 180; pos += 1) { // Servo 'ac'dan 'kapat' pozisyonuna 180 derece donecek.
+                for (pos = 100; pos <= 180; pos += 1) { // Servo 'ac'dan 'kapat' pozisyonuna 180 derece donecek.
                         lid_servo.write(pos); // Belirlenen pozisyona gitmesi isteniyor.
                         delay(10); // Pozisyona 10 ms de ulasiyor.
                 }
@@ -59,8 +66,9 @@ void servoOpen () {
 
 // Servonun kapali pozisyondaki kontrolu ve kapali degil ise kapat
 void servoClose() {
-        if (lid_servo.read() > 160) { // 160 dereceden buyuk oldugu konumdan cagiracak.
-                for (pos = 180; pos >= 1; pos -= 1) { // Servo 'kapat'den 'ac' pozisyonuna 180 derece donecek.
+        if (lid_servo.read() != 100) { //100 derece stok kapali konum anlamina geliyor. 93 ise degil ise aciktir ve kapanis konuma girer
+                // 1 derecelik adimlarla
+                for (pos = 180; pos >= 100; pos -= 1) { // Servo 'kapat'den 'ac' pozisyonuna 180 derece donecek.
                         lid_servo.write(pos); // Belirlenen pozisyona gitmesi isteniyor.
                         delay(10); // Pozisyona 10 ms de ulasiyor
                 }
@@ -91,6 +99,7 @@ void saveSD(String data_t) {
         } else {
                 // if the file didn't open, print an error:
                 //telemetry.println("ERR:SDWR");
+                //Serial.println("ERR:SDWR");
         }
 }
 
@@ -138,11 +147,13 @@ double getTemperature() {
                 if (status != 0) {
                         return T; // Sicaklik degeri fonksiyona donduruluyor.
                 } else {
-                        telemetry.println("ERR:GETTEMP");
+                        //telemetry.println("ERR:GETTEMP");
+                        //Serial.println("ERR:GETTEMP");
                         return -1;
                 }
         } else {
-                telemetry.println("ERR:STARTTEMP");
+                //telemetry.println("ERR:STARTTEMP");
+                //Serial.println("ERR:STARTTEMP");
                 return -1;
         }
 
@@ -160,9 +171,15 @@ double getPressure() {
                 if (status != 0) {
                         return (P); // Basinc degeri fonksiyona donduruluyor.
                 }
-                else telemetry.println("ERR:RETPRESS");
+                else {
+                        //telemetry.println("ERR:RETPRESS");
+                        //Serial.println("ERR:RETPRESS");
+                }
         }
-        else telemetry.println("ERR:STARTPRESS");
+        else {
+                //telemetry.println("ERR:STARTPRESS");
+                //Serial.println("ERR:STARTPRESS");
+        }
 }
 //@@BMP side end
 
@@ -203,9 +220,7 @@ void descentB(float dist_X) {
         long previousMillis = 0;
         float dist_Y = 390; //
         float time_X = 3.00, time_Y; //Parasut acilana kadar gecen sure
-
         time_Y = ((dist_X - (grav * pow(time_X, 2) / 2) - dist_Y) / 10.87)*1000;
-
         // ardunio calisma suresi milisaniye cinsinden sayiyor.
         unsigned long currentMillis = millis();
         // eger onceki zamanla simdiki zaman arasindaki fark 400m ye
