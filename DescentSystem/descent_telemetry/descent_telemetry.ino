@@ -31,6 +31,7 @@ int getCount();
 void upCount(int);
 int softState(String,double,double,double);
 void wait2secs();
+void descentB(float);
 
 // RTC kurulum degiskenleri
 uint16_t startAddr = 0x0000;            // NV-RAM'de saklamak için başlangıç adresi
