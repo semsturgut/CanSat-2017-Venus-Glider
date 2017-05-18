@@ -11,6 +11,7 @@ SoftwareSerial telemetry(1,0);
 //@@@ Duzenlenecekler
 //1. RTC check_Modules kontrolu eklenecek
 //2. softState kismina RTC de zaman farki var mi yok mu kontrolu eklenecek
+//
 
 // Butun SubFunction lar
 String getTime();
