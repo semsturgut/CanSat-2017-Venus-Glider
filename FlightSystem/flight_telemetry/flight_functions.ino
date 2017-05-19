@@ -1,8 +1,17 @@
 // Saat fonksiyonu saat:dakika:saniye degeri string olarak geri donuyor
 String getTime() {
-        RTC.getTime(); // Saat ve Tarih verilerini al
-        String time_n = String(RTC.hour, DEC) + ':' + String(RTC.minute, DEC) + ':' + String(RTC.second, DEC);
-        //Serial.println(time_n);
+        // Reset the register pointer
+        Wire.beginTransmission(DS1307_ADDRESS);
+        byte zero = 0x00;
+        Wire.write(zero);
+        Wire.endTransmission();
+        Wire.requestFrom(DS1307_ADDRESS, 7);
+        int second = bcdToDec(Wire.read());
+        int minute = bcdToDec(Wire.read());
+        int hour = bcdToDec(Wire.read() & 0b111111); //24 hour time
+        String time_n = String(hour, DEC) + ':' + String(minute, DEC) + ':' + String(second, DEC);
+        //telemetry.println(time_n);
+        Serial.println(time_n);
         return time_n;
 }
 
@@ -12,11 +21,11 @@ void check_Modules() {
                 //telemetry.println("ERR:BMP");
                 Serial.println("ERR:BMP");
         }
-        if (!RTC.year) { //RTC check islemine farkli bir algoritma yapilacaktir.
+        if (!Wire.requestFrom(DS1307_ADDRESS, 7)) { //RTC check islemine farkli bir algoritma yapilacaktir.
                 //telemetry.println("ERR:RTC");
                 Serial.println("ERR:RTC");
         }
-        if (!SD.begin(4)) {
+        if (!SD.begin(10)) {
                 //telemetry.println("ERR:SD");
                 Serial.println("ERR:SD");
         }
