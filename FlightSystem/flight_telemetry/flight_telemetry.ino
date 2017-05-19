@@ -75,7 +75,7 @@ int count = 1;
 
 void setup() {
   Serial.begin(19200);
-  telemetry.begin(9600);
+  //telemetry.begin(9600);
   Wire.begin(); // join i2c bus (address optional for master)
   RTC.setRAM(0, (uint8_t *)&startAddr, sizeof(uint16_t)); // Store startAddr in NV-RAM address 0x08
   RTC.getRAM(54, (uint8_t *)&TimeIsSet, sizeof(uint16_t));

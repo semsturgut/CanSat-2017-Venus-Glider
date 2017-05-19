@@ -2,32 +2,31 @@
 String getTime() {
   RTC.getTime(); // Saat ve Tarih verilerini al
   String time_n = String(RTC.hour, DEC) + ':' + String(RTC.minute, DEC) + ':' + String(RTC.second, DEC);
-  //telemetry.println(time_n);
-  Serial.println(time_n);
+  //Serial.println(time_n);
   return time_n;
 }
 
 // Moduller calisiyor mu diye test ediliyor.
 void check_Modules() {
   if (!pressure.begin()) {
-    telemetry.println("ERR:BMP");
-    //Serial.println("ERR:BMP");
+    //telemetry.println("ERR:BMP");
+    Serial.println("ERR:BMP");
   }
   if (!RTC.year) { //RTC check islemine farkli bir algoritma yapilacaktir.
-    telemetry.println("ERR:RTC");
-    //Serial.println("ERR:RTC");
+    //telemetry.println("ERR:RTC");
+    Serial.println("ERR:RTC");
   }
   if (!SD.begin(4)) {
-    telemetry.println("ERR:SD");
-    //Serial.println("ERR:SD");
+    //telemetry.println("ERR:SD");
+    Serial.println("ERR:SD");
   }
   if (!getVoltage()) {
-    telemetry.println("ERR:VLT");
-    //Serial.println("ERR:VLT");
+    //telemetry.println("ERR:VLT");
+    Serial.println("ERR:VLT");
   }
-  if (!getSpeed()){
-    telemetry.println("ERR:SPD");
-    //Serial.println("ERR:SPD");
+  if (!getSpeed()) {
+    //telemetry.println("ERR:SPD");
+    Serial.println("ERR:SPD");
   }
 
 
@@ -72,11 +71,10 @@ void saveSD(String data_t) {
     LOG_TELEMETRY.println(data_t);
     // close the file:
     LOG_TELEMETRY.close();
-    //telemetry.println(data_t);
   } else {
     // if the file didn't open, print an error:
-    //telemetry.println("ERR:SDWR");
-    //Serial.println("ERR:SDWR");
+    //telemetry.println("ERR:SD");
+    Serial.println("ERR:SD");
   }
 }
 
@@ -144,12 +142,12 @@ double getTemperature() {
       return T; // Sicaklik degeri fonksiyona donduruluyor.
     } else {
       //telemetry.println("ERR:GETTEMP");
-      //Serial.println("ERR:GETTEMP");
+      Serial.println("ERR:GETTEMP");
       return -1;
     }
   } else {
     //telemetry.println("ERR:STARTTEMP");
-    //Serial.println("ERR:STARTTEMP");
+    Serial.println("ERR:STARTTEMP");
     return -1;
   }
 
@@ -186,12 +184,12 @@ double getPressure() {
     }
     else {
       //telemetry.println("ERR:RETPRESS");
-      //Serial.println("ERR:RETPRESS");
+      Serial.println("ERR:RETPRESS");
     }
   }
   else {
     //telemetry.println("ERR:STARTPRESS");
-    //Serial.println("ERR:STARTPRESS");
+    Serial.println("ERR:STARTPRESS");
   }
 }
 //@@BMP side end
@@ -216,7 +214,7 @@ int softState(String s_time, double s_alt, double s_temp, double s_volt, int s_h
 }
 
 // pitot tube uzerinden hizin gelen analog degerinin m/s olarak degistirilmesi
-int getSpeed (){
+int getSpeed () {
   return MPXV7002DP.GetAirSpeed();
 }
 
