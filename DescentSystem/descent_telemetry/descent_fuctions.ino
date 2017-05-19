@@ -29,7 +29,7 @@ void check_Modules() {
     //telemetry.println("ERR:RTC");
     Serial.println("ERR:RTC");
   }
-  if (!SD.begin(4)) {
+  if (!SD.begin(10)) {
     //telemetry.println("ERR:SD");
     Serial.println("ERR:SD");
   }
