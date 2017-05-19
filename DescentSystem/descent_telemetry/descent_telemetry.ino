@@ -13,6 +13,7 @@ SoftwareSerial telemetry(1,0);
 //1. RTC check_Modules kontrolu eklenecek
 //2. softState kismina RTC de zaman farki var mi yok mu kontrolu eklenecek
 //3. RTC baslatilma fonksiyonu yazilacak 
+//4. descentB de containerin parasutlu hizina tekrar bakilacak 
 
 // Butun SubFunction lar
 String getTime();

@@ -1,6 +1,6 @@
 //GENEL DIKKAT EDILMESI GEREKENLER!!!
 //1. PITOT TUBE KUTUPHANESI ICERISINDE BULUNAN KM/H DEGERI ILE M/S DEGERI YER DEGISTIRILMELIDIR
-//2. 
+//2. SEA LEVEL PRESSURE (BASELINE) YARISMADAN HEMEN ONCE EEPROM A KAYDEDILECEK !!!!! 
 
 #include <Wire.h>
 #include <DS1307new.h>
@@ -23,9 +23,9 @@ SoftwareSerial telemetry(1, 0);
 //3. pressure verisi telemetri formatiyla string e eklenecek
 //4. Camera module kodlari eklenecek
 //5. check_Modules e pitot tube init fonksiyonunda delay duzenlenip eklenecek
-//6. heading tanimlanacak
-//7. getheading in icine state kismi eklenecek
-//8. RTC baslatilma fonksiyonu yazilacak
+//6. getheading in icine state kismi eklenecek
+//7. RTC baslatilma fonksiyonu yazilacak
+//8. planorun ciktigi yerde  
 
 // Butun SubFunction lar
 String getTime();
