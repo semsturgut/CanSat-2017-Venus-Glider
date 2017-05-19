@@ -1,3 +1,7 @@
+//GENEL DIKKAT EDILMESI GEREKENLER!!!
+//1. PITOT TUBE KUTUPHANESI ICERISINDE BULUNAN KM/H DEGERI ILE M/S DEGERI YER DEGISTIRILMELIDIR
+//2.
+
 #include <Wire.h>
 #include <DS1307new.h>
 #include <SD.h>
@@ -36,6 +40,7 @@ double getAltitude();
 double getTemperature();
 double getPressure();
 int getHeading();
+int getSpeed ();
 int getCount();
 void upCount(int);
 int softState(String, double, double, double, int);
@@ -63,7 +68,7 @@ double alt1tude;
 double temperature;
 double voltage;
 int heading;
-double speed;
+int speed;
 int softwarestate;
 int count = 1;
 
@@ -95,6 +100,7 @@ void loop() {
   temperature = getTemperature();
   voltage = getVoltage();
   heading = getHeading ();
+  speed = getSpeed(); 
   softwarestate = softState(time_now, alt1tude, temperature, voltage, heading);
   con_data = String("4773") + ',' + String("GLIDER") + ',' + String(time_now) + ',';
   con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(speed) + ',' + String(temperature) + ',';

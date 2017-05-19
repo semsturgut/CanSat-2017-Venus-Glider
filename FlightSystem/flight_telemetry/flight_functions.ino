@@ -25,6 +25,10 @@ void check_Modules() {
     telemetry.println("ERR:VLT");
     //Serial.println("ERR:VLT");
   }
+  if (!getSpeed()){
+    telemetry.println("ERR:SPD");
+    //Serial.println("ERR:SPD");
+  }
 
 
 }
@@ -209,5 +213,10 @@ int softState(String s_time, double s_alt, double s_temp, double s_volt, int s_h
   } else {
     return 1;
   }
+}
+
+// pitot tube uzerinden hizin gelen analog degerinin m/s olarak degistirilmesi
+int getSpeed (){
+  return MPXV7002DP.GetAirSpeed();
 }
 
