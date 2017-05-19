@@ -63,7 +63,7 @@ int ldr_count = 0;
 
 void setup() {
         Serial.begin(19200);
-        telemetry.begin(9600);
+        //telemetry.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
         servoClose(); // servoyu kapali konuma getirir.
@@ -96,14 +96,14 @@ void loop() {
                 con_data2 = String(voltage) + ',' + String(softwarestate);
 
                 // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
-                telemetry.print(con_data);
-                //Serial.print(con_data);
+                //telemetry.print(con_data);
+                Serial.print(con_data);
                 delay(10);
-                telemetry.print(con_data1);
-                //Serial.print(con_data1);
+                //telemetry.print(con_data1);
+                Serial.print(con_data1);
                 delay(10);
-                telemetry.println(con_data2);
-                //Serial.println(con_data2);
+                //telemetry.println(con_data2);
+                Serial.println(con_data2);
                 upCount(count); // count degerini EEPROM a yaziyor
                 saveSD(con_data+con_data1+con_data2); // butun telemetri versini SD karta kaydediyo.
                 // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
