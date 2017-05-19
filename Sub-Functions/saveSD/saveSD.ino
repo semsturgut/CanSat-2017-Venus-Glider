@@ -1,12 +1,14 @@
 #include <SPI.h>
 #include <SD.h>
 
+void saveSD (String);
+
 File LOG_TELEMETRY;
 
 void setup() {
         // Open serial communications and wait for port to open:
         Serial.begin(9600);
-        if (!SD.begin(4)) {
+        if (!SD.begin(10)) {
                 Serial.println("initialization failed!");
                 return;
         }
