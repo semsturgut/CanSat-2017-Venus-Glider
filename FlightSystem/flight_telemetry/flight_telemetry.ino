@@ -3,7 +3,6 @@
 //2.
 
 #include <Wire.h>
-#include <DS1307new.h>
 #include <SD.h>
 #include <SPI.h>
 #include <SFE_BMP180.h>
