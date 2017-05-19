@@ -1,10 +1,23 @@
 // Saat fonksiyonu saat:dakika:saniye degeri string olarak geri donuyor
 String getTime() {
-        RTC.getTime(); // Saat ve Tarih verilerini al
-        String time_n = String(RTC.hour, DEC) + ':' + String(RTC.minute, DEC) + ':' + String(RTC.second, DEC);
+        // Reset the register pointer
+        Wire.beginTransmission(DS1307_ADDRESS);
+        byte zero = 0x00;
+        Wire.write(zero);
+        Wire.endTransmission();
+        Wire.requestFrom(DS1307_ADDRESS, 7);
+        int second = bcdToDec(Wire.read());
+        int minute = bcdToDec(Wire.read());
+        int hour = bcdToDec(Wire.read() & 0b111111); //24 hour time
+        String time_n = String(hour, DEC) + ':' + String(minute, DEC) + ':' + String(second, DEC);
         //telemetry.println(time_n);
         Serial.println(time_n);
         return time_n;
+}
+
+byte bcdToDec(byte val)  {
+// Convert binary coded decimal to normal decimal numbers
+        return ( (val/16*10) + (val%16) );
 }
 
 // Moduller calisiyor mu diye test ediliyor.

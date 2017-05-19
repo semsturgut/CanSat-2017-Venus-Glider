@@ -1,11 +1,12 @@
 #include <Wire.h>
-#include <DS1307new.h>
 #include <Servo.h>
 #include <SD.h>
 #include <SPI.h>
 #include <SFE_BMP180.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
+// RTC register tanimlamasi
+#define DS1307_ADDRESS 0x68
 
 SoftwareSerial telemetry(1,0);
 //@@@ Duzenlenecekler
@@ -33,11 +34,9 @@ void upCount(int);
 int softState(String,double,double,double);
 void wait2secs();
 void descentB(float);
+byte bcdToDec(byte);
 
 // RTC kurulum degiskenleri
-uint16_t startAddr = 0x0000;            // NV-RAM'de saklamak için başlangıç adresi
-uint16_t lastAddr;                      // NV-RAM'de saklamak için yeni adres
-uint16_t TimeIsSet = 0xaa55;            // Saatin tekrar ayarlanmamasına yardımcı olur.
 
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
 int pos;
@@ -66,8 +65,6 @@ void setup() {
         Serial.begin(19200);
         telemetry.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
-        RTC.setRAM(0, (uint8_t *)&startAddr, sizeof(uint16_t)); // Store startAddr in NV-RAM address 0x08
-        RTC.getRAM(54, (uint8_t *)&TimeIsSet, sizeof(uint16_t));
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
         servoClose(); // servoyu kapali konuma getirir.
         pressure.begin(); // bmp sensorunu baslatir
