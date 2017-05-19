@@ -2,6 +2,11 @@
 #include <SFE_BMP180.h>
 SFE_BMP180 pressure;
 double baseline;
+double getPressure ();
+void write (int, int);
+void writeMag(int, int);
+byte readMag (int);
+
 void setup()
 {
         Serial.begin(115200);
@@ -30,7 +35,7 @@ void setup()
 
 void loop()
 {
-        double a,P;
+        /*double a,P;
         P = getPressure();
         a = pressure.altitude(P,baseline);
         Serial.print("relative altitude: ");
@@ -39,7 +44,7 @@ void loop()
         Serial.print(" meters, ");
         if (a >= 0.0) Serial.print(" ");  // pozitif sayilar icin bosluk olmali
         Serial.print(a*3.28084,0);
-        Serial.println(" feet");
+        Serial.println(" feet");*/
 
         int xh = readMag(0x04); // x yonunu oku, high byte
         int xl = readMag(0x03); // x yonunu oku, low byte
@@ -60,7 +65,7 @@ void loop()
         Serial.println(z);
         Serial.println("");
         Serial.println("");
-        delay(1000);
+        delay(100);
 }
 byte readMag(int reg)
 {

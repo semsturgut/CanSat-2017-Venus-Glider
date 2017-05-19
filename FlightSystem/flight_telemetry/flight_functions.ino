@@ -26,7 +26,7 @@ void check_Modules() {
     //Serial.println("ERR:VLT");
   }
 
- 
+
 }
 
 // Voltage divider a gore analog voltage okuma
@@ -77,6 +77,25 @@ void saveSD(String data_t) {
 }
 
 //@@BMP side start
+
+byte readMag(int reg)
+{
+  Wire.beginTransmission(0x0C);
+  Wire.write(reg);
+  Wire.endTransmission(false);
+  Wire.requestFrom(0x0C, 1, false); // talep edilen data verisi
+  byte val = Wire.read();
+  Wire.endTransmission(true);
+  return val;
+}
+
+void writeMag(int reg, int data)
+{
+  Wire.beginTransmission(0x0C);
+  Wire.write(reg);
+  Wire.write(data);
+  Wire.endTransmission(true);
+}
 
 byte read(int reg) {
   Wire.beginTransmission(0x68); // 0x68 sensor adresine veri transferi baslar
@@ -132,6 +151,23 @@ double getTemperature() {
 
 
 }
+//magnetometer degerlerini alma islemi
+int getHeading() {
+  int xh = readMag(0x04); // x yonunu oku, high byte
+  int xl = readMag(0x03); // x yonunu oku, low byte
+  int yh = readMag(0x06);
+  int yl = readMag(0x05);
+  int zh = readMag(0x08);
+  int zl = readMag(0x07);
+  readMag(0x09);       //Mag modul baska bir olcum yapmak icin
+  int x = (xh << 8) | (xl & 0xff);
+  int y = (yh << 8) | (yl & 0xff);
+  int z = (zh << 8) | (zl & 0xff);
+
+  return x;
+}
+
+
 
 // Basinc degerlerini alma islemi
 double getPressure() {
@@ -167,7 +203,7 @@ void upCount(int up_count) {
 }
 
 // software state durumunu gelen degerlere gore yazilim verilerinin dogrulugu kontrolu
-int softState(String s_time, double s_alt, double s_temp, double s_volt) {
+int softState(String s_time, double s_alt, double s_temp, double s_volt, int s_head) {
   if (s_alt != -1 || s_temp != -1 || s_volt != -1) {
     return 0;
   } else {
