@@ -1,3 +1,46 @@
+// softstate telemetri verileri alma, gonderme, kaydetme..
+String mainTelemetry(String STATE) {
+        // ldr_count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
+        count++;
+        // Butun sensor verilerini alip telemetri formatiyla birlikte string e ceviriyor
+        time_now = getTime();
+        alt1tude = getAltitude();
+        temperature = getTemperature();
+        voltage = getVoltage();
+        //softwarestate = softState(time_now, alt1tude, temperature, voltage);
+        con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(time_now) + ',';
+        con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(temperature) + ',';
+        con_data2 = String(voltage) + ',' + String(STATE);
+
+        // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
+        //telemetry.print(con_data);
+        Serial.print(con_data);
+        delay(10);
+        //telemetry.print(con_data1);
+        Serial.print(con_data1);
+        delay(10);
+        //telemetry.println(con_data2);
+        Serial.println(con_data2);
+        upCount(count); // count degerini EEPROM a yaziyor
+        saveSD(con_data + con_data1 + con_data2); // butun telemetri versini SD karta kaydediyo.
+
+        // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
+        // ya da sadece 100 metrenin uzerinde oldugu zaman millis iceren ikinci ayrilma fonksiyonunu calistir
+        if (getAltitude() > 100 && getAltitude() < 410 && ldr_count) {
+                servoOpen();
+                mainTelemetry("SEPERATED");
+        } else if (getAltitude() > 100 && ldr_count) {
+                descentB(fall_alt);
+                mainTelemetry("SEPERATED");
+        }
+        // Servo aciksa kapak acilmis demektir
+        // Kapak acildigindan 2 saniye sonra veriyi kesiyor
+        if (lid_servo.read() > 160) {
+                wait2secs();
+        }
+
+        delay(980);
+}
 // Saat fonksiyonu saat:dakika:saniye degeri string olarak geri donuyor
 String getTime() {
         // Reset the register pointer
@@ -61,8 +104,8 @@ double getVoltage() {
         if (sensorValue) {
                 return Vin;
         } /*else {
-                return -1;
-             }*/
+                      return -1;
+                   }*/
 }
 
 // Servonun acik pozisyondaki kontrolu ve acik degil ise servoyu ac
@@ -109,10 +152,10 @@ void saveSD(String data_t) {
                 LOG_TELEMETRY.close();
 
         } /* else {
-                 // if the file didn't open, print an error:
-                 //telemetry.println("ERR:SD");
-                 Serial.println("ERR:SD");
-             }*/
+                       // if the file didn't open, print an error:
+                       //telemetry.println("ERR:SD");
+                       Serial.println("ERR:SD");
+                   }*/
 }
 
 //@@BMP side start
@@ -143,8 +186,8 @@ double getAltitude() {
         if (alt) {
                 return alt; // Yukseklik degeri metre cinsinden fonksiyona donduruluyor.
         } /*else {
-                return -1;
-             }*/
+                      return -1;
+                   }*/
 }
 
 // Sicaklik degeri aliniyor. Hata alinirsa -1 degeri donuyor.
@@ -159,15 +202,15 @@ double getTemperature() {
                 if (status != 0) {
                         return T; // Sicaklik degeri fonksiyona donduruluyor.
                 } /*else {
-                        //telemetry.println("ERR:GETTEMP");
-                        Serial.println("ERR:GETTEMP");
-                        return -1;
-                     }*/
+                                    //telemetry.println("ERR:GETTEMP");
+                                    Serial.println("ERR:GETTEMP");
+                                    return -1;
+                                 }*/
         } /*else {
-                //telemetry.println("ERR:STARTTEMP");
-                Serial.println("ERR:STARTTEMP");
-                return -1;
-             }*/
+                      //telemetry.println("ERR:STARTTEMP");
+                      Serial.println("ERR:STARTTEMP");
+                      return -1;
+                   }*/
 
 
 }
@@ -188,10 +231,10 @@ double getPressure() {
                         Serial.println("ERR:RETPRESS");
                    }*/
         } /*
-             else {
-                 //telemetry.println("ERR:STARTPRESS");
-                 Serial.println("ERR:STARTPRESS");
-             }*/
+                   else {
+                       //telemetry.println("ERR:STARTPRESS");
+                       Serial.println("ERR:STARTPRESS");
+                   }*/
 }
 //@@BMP side end
 
@@ -214,16 +257,6 @@ int getCount() {
 void upCount(int up_count) {
         EEPROM.update(0, up_count);
 }
-
-/*
-   // software state durumunu gelen degerlere gore yazilim verilerinin dogrulugu kontrolu
-   int softState(String s_time, double s_alt, double s_temp, double s_volt) {
-   if (s_alt != -1 || s_temp != -1 || s_volt != -1) {
-    return 0;
-   } else {
-    return 1;
-   }
-   }*/
 
 // Yedek acilma sistemi: gunesi gordugu anda parasut acilma suresini
 // hesaba katip o hesaba gore 400 metreye ulasma suresini hesapliyor.

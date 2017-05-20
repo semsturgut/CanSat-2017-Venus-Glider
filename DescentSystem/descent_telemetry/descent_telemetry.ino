@@ -1,3 +1,7 @@
+
+//DESCENT B DUSUS HIZI VE YUKSEKLIGI KONTROL EDILECEK !!
+// LDR SENSORU ICIN BIRDEN FAZLA DEGER ALINIP ONA GORE ISIK DENETIMI YAPILICAK
+
 #include <Wire.h>
 #include <Servo.h>
 #include <SD.h>
@@ -8,7 +12,7 @@
 // RTC register tanimlamasi
 #define DS1307_ADDRESS 0x68
 
-SoftwareSerial telemetry(1,0);
+SoftwareSerial telemetry(1, 0);
 //@@@ Duzenlenecekler
 //3. RTC baslatilma fonksiyonu yazilacak
 
@@ -72,6 +76,8 @@ void setup() {
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x6A, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali
         write(0x37, 0x02); //Bypass modu acik
+        mainTelemetry("START");
+        mainTelemetry("BOOT");
 }
 
 void loop() {
@@ -82,40 +88,8 @@ void loop() {
         }
         // ldr count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
         if (ldr_count) {
-                count++;
-                // Butun sensor verilerini alip telemetri formatiyla birlikte string e ceviriyor
-                time_now = getTime();
-                alt1tude = getAltitude();
-                temperature = getTemperature();
-                voltage = getVoltage();
-                //softwarestate = softState(time_now, alt1tude, temperature, voltage);
-                con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(time_now) + ',';
-                con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(temperature) + ',';
-                con_data2 = String(voltage) + ',' + String("DEPLOY");
-
-                // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
-                //telemetry.print(con_data);
-                Serial.print(con_data);
-                delay(10);
-                //telemetry.print(con_data1);
-                Serial.print(con_data1);
-                delay(10);
-                //telemetry.println(con_data2);
-                Serial.println(con_data2);
-                upCount(count); // count degerini EEPROM a yaziyor
-                saveSD(con_data+con_data1+con_data2); // butun telemetri versini SD karta kaydediyo.
-                // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
-                // ya da sadece 100 metrenin uzerinde oldugu zaman millis iceren ikinci ayrilma fonksiyonunu calistir
-                if (getAltitude() > 100 && getAltitude() < 410) {
-                        servoOpen();
-                } else if (getAltitude() > 100) {
-                        descentB(fall_alt);
-                }
-                // Servo aciksa kapak acilmis demektir
-                // Kapak acildigindan 2 saniye sonra veriyi kesiyor
-                if (lid_servo.read() > 160) {
-                        wait2secs();
-                }
-                delay(980);
+                mainTelemetry ("DESCENT");
+        } else {
+                mainTelemetry("LAUNCH");
         }
 }
