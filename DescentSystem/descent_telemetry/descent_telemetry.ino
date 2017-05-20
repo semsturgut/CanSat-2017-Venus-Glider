@@ -10,9 +10,6 @@
 
 SoftwareSerial telemetry(1,0);
 //@@@ Duzenlenecekler
-//1. softwarestate kismi eklenecek.
-//Not: Software state derken yazilimin bulundugu durumdan bahsediyor
-// Glider ayrildi mi ,Dususe gecti mi vsvs ..
 //3. RTC baslatilma fonksiyonu yazilacak
 
 // Butun SubFunction lar
