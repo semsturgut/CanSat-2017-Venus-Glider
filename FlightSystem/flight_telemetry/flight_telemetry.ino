@@ -91,7 +91,7 @@ void setup() {
 }
 
 void loop() {
-        mainTelemetry("SPIN")
+        mainTelemetry("SPIN");
         // yerden 10 metre yukseklige ulastiginda buzzer calsin.
         /* if ( getAltitude() < 10) {
            while (1) {
