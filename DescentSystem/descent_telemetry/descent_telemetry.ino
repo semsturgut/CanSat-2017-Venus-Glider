@@ -10,14 +10,21 @@
 
 SoftwareSerial telemetry(1,0);
 //@@@ Duzenlenecekler
+<<<<<<< HEAD
 //1. RTC check_Modules kontrolu eklenecek
 //2. softState kismina RTC de zaman farki var mi yok mu kontrolu eklenecek
 //3. RTC baslatilma fonksiyonu yazilacak 
 //4. descentB de containerin parasutlu hizina tekrar bakilacak 
+=======
+//1. softwarestate kismi eklenecek.
+//Not: Software state derken yazilimin bulundugu durumdan bahsediyor
+// Glider ayrildi mi ,Dususe gecti mi vsvs ..
+//3. RTC baslatilma fonksiyonu yazilacak
+>>>>>>> origin/master
 
 // Butun SubFunction lar
 String getTime();
-void check_Modules();
+//void check_Modules();
 double getVoltage();
 void servoOpen();
 void servoClose();
@@ -32,7 +39,7 @@ double getPressure();
 int check_light();
 int getCount();
 void upCount(int);
-int softState(String,double,double,double);
+//int softState(String,double,double,double);
 void wait2secs();
 void descentB(float);
 byte bcdToDec(byte);
@@ -70,7 +77,7 @@ void setup() {
         servoClose(); // servoyu kapali konuma getirir.
         pressure.begin(); // bmp sensorunu baslatir
         baseline = getPressure();
-        check_Modules();
+        //check_Modules();
         count = getCount();
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x6A, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali
@@ -91,10 +98,10 @@ void loop() {
                 alt1tude = getAltitude();
                 temperature = getTemperature();
                 voltage = getVoltage();
-                softwarestate = softState(time_now, alt1tude, temperature, voltage);
+                //softwarestate = softState(time_now, alt1tude, temperature, voltage);
                 con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(time_now) + ',';
                 con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(temperature) + ',';
-                con_data2 = String(voltage) + ',' + String(softwarestate);
+                con_data2 = String(voltage) + ',' + String("DEPLOY");
 
                 // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
                 //telemetry.print(con_data);
