@@ -1,4 +1,4 @@
-String mainTelemetry(String STATE){
+String mainTelemetry(String STATE, int shot_count){
         // ldr_count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
         count++;
         // Butun sensor verilerini alip telemetri formatiyla birlikte string e ceviriyor
@@ -12,7 +12,36 @@ String mainTelemetry(String STATE){
         //softwarestate = softState(time_now, alt1tude, pressure1, temperature, voltage, heading);
         con_data = String("4773") + ',' + String("GLIDER") + ',' + String(time_now) + ',';
         con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(pressure1) + ',' + String(sp33d) + ',' + String(temperature) + ',';
-        con_data2 = String(voltage) + ',' + String(heading) + ',' + String(STATE) + ',' + String ("24");
+        con_data2 = String(voltage) + ',' + String(heading) + ',' + String(STATE) + ',' + String (shot_count);
+
+        // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
+        //telemetry.print(con_data);
+        Serial.print(con_data);
+        delay(10);
+        //telemetry.print(con_data1);
+        Serial.print(con_data1);
+        delay(10);
+        //telemetry.println(con_data2);
+        Serial.println(con_data2);
+        upCount(count); // count degerini EEPROM a yaziyor
+        saveSD(con_data + con_data1 + con_data2); // butun telemetri versini SD karta kaydediyo.
+}
+
+String mainTelemetry1(String STATE){
+        // ldr_count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
+        count++;
+        // Butun sensor verilerini alip telemetri formatiyla birlikte string e ceviriyor
+        time_now = getTime();
+        alt1tude = getAltitude();
+        pressure1 = getPressure ();
+        temperature = getTemperature();
+        voltage = getVoltage();
+        heading = getHeading ();
+        sp33d = getSpeed();
+        //softwarestate = softState(time_now, alt1tude, pressure1, temperature, voltage, heading);
+        con_data = String("4773") + ',' + String("GLIDER") + ',' + String(time_now) + ',';
+        con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(pressure1) + ',' + String(sp33d) + ',' + String(temperature) + ',';
+        con_data2 = String(voltage) + ',' + String(heading) + ',' + String(STATE) + ',' + String (0);
 
         // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
         //telemetry.print(con_data);
@@ -64,10 +93,15 @@ void check_Modules() {
                 //telemetry.println("ERR:SD");
                 Serial.println("ERR:SD");
         }
+        if (!cam.begin()) {
+                Serial.println("ERR:CAM");
+        } else {
+                cam.setImageSize(VC0706_640x480);
+                Serial.println("Camera Found");
+        }
         Serial.println("Pitot tube init...");
         MPXV7002DP.Init();
         Serial.println("init done!");
-
 }
 
 // Voltage divider a gore analog voltage okuma
@@ -216,16 +250,6 @@ int getCount() {
 void upCount(int up_count) {
         EEPROM.update(0, up_count);
 }
-
-/*
-   // software state durumunu gelen degerlere gore yazilim verilerinin dogrulugu kontrolu
-   int softState(String s_time, double s_alt, double s_press, double s_temp, double s_volt, int s_head) {
-        if (s_alt != -1 || s_press !=-1 || s_temp != -1 || s_volt != -1) {
-                return 0;
-        } else {
-                return 1;
-        }
-   }*/
 
 // pitot tube uzerinden hizin gelen analog degerinin m/s olarak degistirilmesi
 int getSpeed () {
