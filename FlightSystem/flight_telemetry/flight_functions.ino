@@ -11,12 +11,17 @@ String getTime() {
         int hour = bcdToDec(Wire.read() & 0b111111); //24 hour time
         String time_n = String(hour, DEC) + ':' + String(minute, DEC) + ':' + String(second, DEC);
         //telemetry.println(time_n);
-        Serial.println(time_n);
+        //Serial.println(time_n);
         return time_n;
 }
 
-// Moduller calisiyor mu diye test ediliyor.
-void check_Modules() {
+byte bcdToDec(byte val)  {
+        // Convert binary coded decimal to normal decimal numbers
+        return ( (val / 16 * 10) + (val % 16) );
+}
+/*
+   // Moduller calisiyor mu diye test ediliyor.
+   void check_Modules() {
         if (!pressure.begin()) {
                 //telemetry.println("ERR:BMP");
                 Serial.println("ERR:BMP");
@@ -38,7 +43,7 @@ void check_Modules() {
                 Serial.println("ERR:SPD");
         }
 
-}
+   }*/
 
 // Voltage divider a gore analog voltage okuma
 double getVoltage() {
@@ -212,14 +217,15 @@ void upCount(int up_count) {
         EEPROM.update(0, up_count);
 }
 
-// software state durumunu gelen degerlere gore yazilim verilerinin dogrulugu kontrolu
-int softState(String s_time, double s_alt, double s_temp, double s_volt, int s_head) {
+/*
+   // software state durumunu gelen degerlere gore yazilim verilerinin dogrulugu kontrolu
+   int softState(String s_time, double s_alt, double s_temp, double s_volt, int s_head) {
         if (s_alt != -1 || s_temp != -1 || s_volt != -1) {
                 return 0;
         } else {
                 return 1;
         }
-}
+   }*/
 
 // pitot tube uzerinden hizin gelen analog degerinin m/s olarak degistirilmesi
 int getSpeed () {
