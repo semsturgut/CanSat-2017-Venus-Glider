@@ -10,17 +10,10 @@
 
 SoftwareSerial telemetry(1,0);
 //@@@ Duzenlenecekler
-<<<<<<< HEAD
-//1. RTC check_Modules kontrolu eklenecek
-//2. softState kismina RTC de zaman farki var mi yok mu kontrolu eklenecek
-//3. RTC baslatilma fonksiyonu yazilacak 
-//4. descentB de containerin parasutlu hizina tekrar bakilacak 
-=======
 //1. softwarestate kismi eklenecek.
 //Not: Software state derken yazilimin bulundugu durumdan bahsediyor
 // Glider ayrildi mi ,Dususe gecti mi vsvs ..
 //3. RTC baslatilma fonksiyonu yazilacak
->>>>>>> origin/master
 
 // Butun SubFunction lar
 String getTime();
