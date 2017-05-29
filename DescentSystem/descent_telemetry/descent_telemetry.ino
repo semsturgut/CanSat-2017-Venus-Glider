@@ -1,10 +1,8 @@
-
-//DESCENT B DUSUS HIZI VE YUKSEKLIGI KONTROL EDILECEK !!
-// LDR SENSORU ICIN BIRDEN FAZLA DEGER ALINIP ONA GORE ISIK DENETIMI YAPILICAK
+// GENEL DIKKAT EDILMESI GEREKENLER
+// EKLENECEK!!
 
 #include <Wire.h>
 #include <Servo.h>
-#include <SD.h>
 #include <SPI.h>
 #include <SFE_BMP180.h>
 #include <EEPROM.h>
@@ -13,18 +11,23 @@
 #define DS1307_ADDRESS 0x68
 
 SoftwareSerial telemetry(1, 0);
-//@@@ Duzenlenecekler
-//3. RTC baslatilma fonksiyonu yazilacak
+// @@@ Duzenlenecekler
+// TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
+/* TODO: Sistemin toplamda kac ms da veri gonderildigine bakilacak.
+   Millis kullanilabilir.*/
+/* TODO: Descent B dusus hizi makinaci arkadaslardan
+   alinan verilere gore duzenlenecek*/
+/* TODO: LDR sensorunden birden fazla deger
+   alinip ona gore isik denetimi yapilacak.*/
 
-// Butun SubFunction lar
+// Butun SubFunctionlar
+void check_Modules();
 String getTime();
-//void check_Modules();
 double getVoltage();
 void servoOpen();
 void servoClose();
 void buzzerOn();
 void buzzerOff();
-void saveSD(String);
 byte read(int);
 void write(int, int);
 double getAltitude();
@@ -33,63 +36,120 @@ double getPressure();
 int check_light();
 int getCount();
 void upCount(int);
-//int softState(String,double,double,double);
 void wait2secs();
 void descentB(float);
 byte bcdToDec(byte);
 
-// RTC kurulum degiskenleri
-
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
-int pos;
-int buzzerPin = 9;
-int servoPin = 3;
-File LOG_TELEMETRY;
+unsigned int pos;
+unsigned int buzzerPin = 9;
+unsigned int servoPin = 3;
 SFE_BMP180 pressure;
 double baseline; // BMP sensor degerlerinin olcumu icin
 Servo lid_servo;
-int voltPin = A0;
-int ldrPin = A1;
-int ldr;
+unsigned int voltPin = A0;
+unsigned int ldrPin = A1;
+unsigned int ldr_Value;
 
 // Veri gonderimi ve veri durumu gozetlenmesi icin tanimlanan degiskenler
 String time_now;
-String con_data, con_data1, con_data2;
-double alt1tude;
-double temperature;
-double voltage;
-int softwarestate;
+String STATE = "DESCENT";
 double fall_alt;
-int count = 1;
-int ldr_count = 0;
+unsigned int count = 0;
+unsigned int ldr_count = 0;
 
 void setup() {
-        Serial.begin(19200);
-        //telemetry.begin(9600);
+        // Serial.begin(19200); // Sensorlerin test edilmesi gerektiginde acin.
+        telemetry.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
         servoClose(); // servoyu kapali konuma getirir.
         pressure.begin(); // bmp sensorunu baslatir
         baseline = getPressure();
-        //check_Modules();
+        // check_Modules(); // Sensorlerin test edilmesi gerektiginde acin.
         count = getCount();
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x6A, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali
         write(0x37, 0x02); //Bypass modu acik
-        mainTelemetry("START");
-        mainTelemetry("BOOT");
+        // Kurallarda yazili olan state kismi icin veri gonderimi yapiliyor.
+        telemetry.print(F("4773,"));
+        telemetry.print(F("CONTAINER,"));
+        telemetry.print(getTime());
+        telemetry.print(F(","));
+        telemetry.print(count);
+        telemetry.print(F(","));
+        telemetry.print(getAltitude());
+        telemetry.print(F(","));
+        telemetry.print(getTemperature());
+        telemetry.print(F(","));
+        telemetry.print(getVoltage());
+        telemetry.print(F(","));
+        telemetry.print(F("BOOT"));
+        telemetry.println();
+        upCount(count);
+        delay(1000);
 }
 
 void loop() {
         // isigi bir kere gorurse ldr_count u arttirmaya basliyor
+        if (!ldr_count) {
+                telemetry.print(F("4773,"));
+                telemetry.print(F("CONTAINER,"));
+                telemetry.print(getTime());
+                telemetry.print(F(","));
+                telemetry.print(count);
+                telemetry.print(F(","));
+                telemetry.print(getAltitude());
+                telemetry.print(F(","));
+                telemetry.print(getTemperature());
+                telemetry.print(F(","));
+                telemetry.print(getVoltage());
+                telemetry.print(F(","));
+                telemetry.print(F("IDLE"));
+                telemetry.println();
+                upCount(count);
+                delay(1000);
+        }
+
         if (!ldr_count && check_light()) {
                 ldr_count = 1;
                 fall_alt = getAltitude();
         }
         // ldr count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
         if (ldr_count) {
-                mainTelemetry ("DESCENT");
-        } else {
-                mainTelemetry("LAUNCH");
+                count++;
+                // Veriyi telemetri ile ground station a gonderdiyor
+                telemetry.print(F("4773,"));
+                telemetry.print(F("CONTAINER,"));
+                telemetry.print(getTime());
+                telemetry.print(F(","));
+                telemetry.print(count);
+                telemetry.print(F(","));
+                telemetry.print(getAltitude());
+                telemetry.print(F(","));
+                telemetry.print(getTemperature());
+                telemetry.print(F(","));
+                telemetry.print(getVoltage());
+                telemetry.print(F(","));
+                telemetry.print(STATE); // Yazilimin durumuna gore degisiyor.
+                telemetry.println();
+                upCount(count);
+
+                // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
+                // ya da sadece 100 metrenin uzerinde oldugu zaman millis iceren ikinci ayrilma fonksiyonunu calistir
+                if (getAltitude() > 100 && getAltitude() < 410) {
+                        servoOpen();
+                        STATE = "SEPARATED";
+                } else if (getAltitude() > 100) { // TODO: 390 metre ve servo acik olmadigi zaman descenB yi calistirmak gerekiyor
+                        descentB(fall_alt);
+                        STATE = "PLAN-B";
+                }
+                // Servo aciksa kapak acilmis demektir
+                // Kapak acildigindan 2 saniye sonra veriyi kesiyor
+                if (lid_servo.read() > 160) {
+                        STATE = "2SECS-2SILENCE";
+                        wait2secs();
+                }
+                delay(980);
         }
 }

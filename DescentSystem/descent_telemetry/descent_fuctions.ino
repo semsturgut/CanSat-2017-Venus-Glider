@@ -1,46 +1,3 @@
-// softstate telemetri verileri alma, gonderme, kaydetme..
-String mainTelemetry(String STATE) {
-        // ldr_count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
-        count++;
-        // Butun sensor verilerini alip telemetri formatiyla birlikte string e ceviriyor
-        time_now = getTime();
-        alt1tude = getAltitude();
-        temperature = getTemperature();
-        voltage = getVoltage();
-        //softwarestate = softState(time_now, alt1tude, temperature, voltage);
-        con_data = String("4773") + ',' + String("CONTAINER") + ',' + String(time_now) + ',';
-        con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(temperature) + ',';
-        con_data2 = String(voltage) + ',' + String(STATE);
-
-        // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
-        //telemetry.print(con_data);
-        Serial.print(con_data);
-        delay(10);
-        //telemetry.print(con_data1);
-        Serial.print(con_data1);
-        delay(10);
-        //telemetry.println(con_data2);
-        Serial.println(con_data2);
-        upCount(count); // count degerini EEPROM a yaziyor
-        saveSD(con_data + con_data1 + con_data2); // butun telemetri versini SD karta kaydediyo.
-
-        // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
-        // ya da sadece 100 metrenin uzerinde oldugu zaman millis iceren ikinci ayrilma fonksiyonunu calistir
-        if (getAltitude() > 100 && getAltitude() < 410 && ldr_count) {
-                servoOpen();
-                mainTelemetry("SEPERATED");
-        } else if (getAltitude() > 100 && ldr_count) {
-                descentB(fall_alt);
-                mainTelemetry("SEPERATED");
-        }
-        // Servo aciksa kapak acilmis demektir
-        // Kapak acildigindan 2 saniye sonra veriyi kesiyor
-        if (lid_servo.read() > 160) {
-                wait2secs();
-        }
-
-        delay(980);
-}
 // Saat fonksiyonu saat:dakika:saniye degeri string olarak geri donuyor
 String getTime() {
         // Reset the register pointer
@@ -61,51 +18,39 @@ byte bcdToDec(byte val)  {
         // Convert binary coded decimal to normal decimal numbers
         return ( (val / 16 * 10) + (val % 16) );
 }
-/*
+
+/*  // Sensorlerin test edilmesi gerektiginde acin.
    // Moduller calisiyor mu diye test ediliyor.
    void check_Modules() {
-   if (!pressure.begin()) {
-    //telemetry.println("ERR:BMP");
-    Serial.println("ERR:BMP");
-   }
-   if (!Wire.requestFrom(DS1307_ADDRESS, 7)) { //RTC check islemine farkli bir algoritma yapilacaktir.
-    //telemetry.println("ERR:RTC");
-    Serial.println("ERR:RTC");
-   }
-   if (!SD.begin(10)) {
-    //telemetry.println("ERR:SD");
-    Serial.println("ERR:SD");
-   }
-   if (!getVoltage()) {
-    //telemetry.println("ERR:VLT");
-    Serial.println("ERR:VLT");
-   }
-   if (!lid_servo.read()) {
-    //telemetry.println("ERR:SRV");
-    Serial.println("ERR:SRV");
-   }
-   if (analogRead(ldrPin)) {
-    //telemetry.println("ERR:LDR");
-    Serial.println("ERR:LDR");
-   }
-   }
- */
+        if (!pressure.begin()) {
+                Serial.println(F("ERR:BMP"));
+        }
+        if (!Wire.requestFrom(DS1307_ADDRESS, 7)) { //RTC check islemine farkli bir algoritma yapilacaktir.
+                Serial.println(F("ERR:RTC"));
+        }
+        if (!getVoltage()) {
+                Serial.println(F("ERR:VLT"));
+        }
+        if (!lid_servo.read()) {
+                Serial.println(F("ERR:SRV"));
+        }
+        if (!analogRead(ldrPin)) {
+                Serial.println(F("ERR:LDR"));
+        }
+   }*/
+
 // Voltage divider a gore analog voltage okuma
 double getVoltage() {
         double R1 = 9710.0, R2 = 9360.0;
         double Vout = 0.0;
         double Vin = 0.0;
         int sensorValue = analogRead(voltPin);
-        // Convert the analo reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+        // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
         Vout = sensorValue * (5.0 / 1023.0);
         // voltage divider uzerinden giris gerilimi hesaplama
         Vin = Vout * ((R2 + R1) / R2);
         //Analog giristen veri okuyabiliyorsa hesaplanan degeri geri dondur
-        if (sensorValue) {
-                return Vin;
-        } /*else {
-                      return -1;
-                   }*/
+        return Vin;
 }
 
 // Servonun acik pozisyondaki kontrolu ve acik degil ise servoyu ac
@@ -140,24 +85,6 @@ void buzzerOff () {
         noTone(buzzerPin);
 }
 
-// SD karta veri kayit ediyor.
-void saveSD(String data_t) {
-        // open the file. note that only one file can be open at a time,
-        // so you have to close this one before opening another.
-        LOG_TELEMETRY = SD.open("flight.csv", FILE_WRITE);
-        // if the file opened okay, write to it:
-        if (LOG_TELEMETRY) {
-                LOG_TELEMETRY.println(data_t);
-                // close the file:
-                LOG_TELEMETRY.close();
-
-        } /* else {
-                       // if the file didn't open, print an error:
-                       //telemetry.println("ERR:SD");
-                       Serial.println("ERR:SD");
-                   }*/
-}
-
 //@@BMP side start
 
 byte read(int reg) {
@@ -185,9 +112,7 @@ double getAltitude() {
         //Yukseklik degeri alabiliyorsa geri dondur.
         if (alt) {
                 return alt; // Yukseklik degeri metre cinsinden fonksiyona donduruluyor.
-        } /*else {
-                      return -1;
-                   }*/
+        }
 }
 
 // Sicaklik degeri aliniyor. Hata alinirsa -1 degeri donuyor.
@@ -201,18 +126,8 @@ double getTemperature() {
                 status = pressure.getTemperature(T); // Sicaklik degeri aliniyor
                 if (status != 0) {
                         return T; // Sicaklik degeri fonksiyona donduruluyor.
-                } /*else {
-                                    //telemetry.println("ERR:GETTEMP");
-                                    Serial.println("ERR:GETTEMP");
-                                    return -1;
-                                 }*/
-        } /*else {
-                      //telemetry.println("ERR:STARTTEMP");
-                      Serial.println("ERR:STARTTEMP");
-                      return -1;
-                   }*/
-
-
+                }
+        }
 }
 
 // Basinc degerlerini alma islemi
@@ -226,22 +141,14 @@ double getPressure() {
                 if (status != 0) {
                         return (P); // Basinc degeri fonksiyona donduruluyor.
                 }
-                /*else {
-                        //telemetry.println("ERR:RETPRESS");
-                        Serial.println("ERR:RETPRESS");
-                   }*/
-        } /*
-                   else {
-                       //telemetry.println("ERR:STARTPRESS");
-                       Serial.println("ERR:STARTPRESS");
-                   }*/
+        }
 }
 //@@BMP side end
 
 //ortamin aydinlik mi karanlik mi oldugunu anlayan fonksiyon
 int check_light () {
-        ldr = analogRead(ldrPin);
-        if (ldr < 20) { // 20 den kucukse ortam karanliktir 0 gonderir
+        ldr_Value = analogRead(ldrPin);
+        if (ldr_Value > 500) { // 20 den kucukse ortam karanliktir 0 gonderir
                 return 0;
         } else { //20 den buyukse ortam aydinlik 1 gönderir
                 return 1;

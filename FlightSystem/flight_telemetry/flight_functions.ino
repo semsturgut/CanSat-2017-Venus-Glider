@@ -1,65 +1,7 @@
-String mainTelemetry(String STATE, int shot_count){
-        // ldr_count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
-        count++;
-        // Butun sensor verilerini alip telemetri formatiyla birlikte string e ceviriyor
-        time_now = getTime();
-        alt1tude = getAltitude();
-        pressure1 = getPressure ();
-        temperature = getTemperature();
-        voltage = getVoltage();
-        heading = getHeading ();
-        sp33d = getSpeed();
-        //softwarestate = softState(time_now, alt1tude, pressure1, temperature, voltage, heading);
-        con_data = String("4773") + ',' + String("GLIDER") + ',' + String(time_now) + ',';
-        con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(pressure1) + ',' + String(sp33d) + ',' + String(temperature) + ',';
-        con_data2 = String(voltage) + ',' + String(heading) + ',' + String(STATE) + ',' + String (shot_count);
-
-        // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
-        //telemetry.print(con_data);
-        Serial.print(con_data);
-        delay(10);
-        //telemetry.print(con_data1);
-        Serial.print(con_data1);
-        delay(10);
-        //telemetry.println(con_data2);
-        Serial.println(con_data2);
-        upCount(count); // count degerini EEPROM a yaziyor
-        saveSD(con_data + con_data1 + con_data2); // butun telemetri versini SD karta kaydediyo.
-}
-
-String mainTelemetry1(String STATE){
-        // ldr_count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
-        count++;
-        // Butun sensor verilerini alip telemetri formatiyla birlikte string e ceviriyor
-        time_now = getTime();
-        alt1tude = getAltitude();
-        pressure1 = getPressure ();
-        temperature = getTemperature();
-        voltage = getVoltage();
-        heading = getHeading ();
-        sp33d = getSpeed();
-        //softwarestate = softState(time_now, alt1tude, pressure1, temperature, voltage, heading);
-        con_data = String("4773") + ',' + String("GLIDER") + ',' + String(time_now) + ',';
-        con_data1 = String(count) + ',' + String(alt1tude) + ',' + String(pressure1) + ',' + String(sp33d) + ',' + String(temperature) + ',';
-        con_data2 = String(voltage) + ',' + String(heading) + ',' + String(STATE) + ',' + String (0);
-
-        // Veriyi telemetri ile ground station a gonderdikten sonra SD karta kaydediyor
-        //telemetry.print(con_data);
-        Serial.print(con_data);
-        delay(10);
-        //telemetry.print(con_data1);
-        Serial.print(con_data1);
-        delay(10);
-        //telemetry.println(con_data2);
-        Serial.println(con_data2);
-        upCount(count); // count degerini EEPROM a yaziyor
-        saveSD(con_data + con_data1 + con_data2); // butun telemetri versini SD karta kaydediyo.
-        delay(980);
-}
-
 // Saat fonksiyonu saat:dakika:saniye degeri string olarak geri donuyor
 String getTime() {
         // Reset the register pointer
+        // Wire.beginTransmission(); // Kod bu olmayabilir internetten bak!!
         byte zero = 0x00;
         Wire.write(zero);
         Wire.endTransmission();
@@ -75,33 +17,26 @@ byte bcdToDec(byte val)  {
         // Convert binary coded decimal to normal decimal numbers
         return ( (val / 16 * 10) + (val % 16) );
 }
-// Moduller calisiyor mu diye test ediliyor.
 
 // @@@@@@ SAAT MODULU AYNI BOARD DA CALISIR AMA FLIGHT UZERINDE CALISMAZ ISE
 // Wire.beginTransmission kodunu getTime FONKSIYONUNUN BASINA YAZIN @@@@@@
 
 void check_Modules() {
         if (!pressure.begin()) {
-                //telemetry.println("ERR:BMP");
                 Serial.println("ERR:BMP");
         }
         if (!Wire.requestFrom(DS1307_ADDRESS, 7)) { //RTC check islemine farkli bir algoritma yapilacaktir.
-                //telemetry.println("ERR:RTC");
                 Serial.println("ERR:RTC");
         }
         if (!SD.begin(10)) {
-                //telemetry.println("ERR:SD");
                 Serial.println("ERR:SD");
         }
         if (!cam.begin()) {
                 Serial.println("ERR:CAM");
         } else {
                 cam.setImageSize(VC0706_640x480);
-                Serial.println("Camera Found");
         }
-        Serial.println("Pitot tube init...");
         MPXV7002DP.Init();
-        Serial.println("init done!");
 }
 
 // Voltage divider a gore analog voltage okuma
@@ -120,7 +55,6 @@ double getVoltage() {
         }
 }
 
-
 // Buzzer i acip tonunu 261 e ayarliyor.
 void buzzerOn() {
         tone(buzzerPin, 261);
@@ -129,23 +63,6 @@ void buzzerOn() {
 // Buzzeri kapatiyor.
 void buzzerOff() {
         noTone(buzzerPin);
-}
-
-// SD karta veri kayit ediyor.
-void saveSD(String data_t) {
-        // open the file. note that only one file can be open at a time,
-        // so you have to close this one before opening another.
-        LOG_TELEMETRY = SD.open("flight.csv", FILE_WRITE);
-        // if the file opened okay, write to it:
-        if (LOG_TELEMETRY) {
-                LOG_TELEMETRY.println(data_t);
-                // close the file:
-                LOG_TELEMETRY.close();
-        } else {
-                // if the file didn't open, print an error:
-                //telemetry.println("ERR:SD");
-                Serial.println("ERR:SD");
-        }
 }
 
 //@@BMP side start
@@ -224,8 +141,6 @@ int getHeading() {
         return x;
 }
 
-
-
 // Basinc degerlerini alma islemi
 double getPressure() {
         char status;
@@ -254,4 +169,12 @@ void upCount(int up_count) {
 // pitot tube uzerinden hizin gelen analog degerinin m/s olarak degistirilmesi
 int getSpeed () {
         return MPXV7002DP.GetAirSpeed();
+}
+
+//saving camera count from EEPROM
+int getCam_count(){
+        return EEPROM.read (0);
+}
+int upCam_count(int pic_count){
+        EEPROM.update (0, pic_count);
 }
