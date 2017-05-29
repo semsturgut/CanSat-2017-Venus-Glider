@@ -42,13 +42,13 @@ byte bcdToDec(byte);
 
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
 unsigned int pos;
-unsigned int buzzerPin = 9;
-unsigned int servoPin = 3;
+const int buzzerPin = 9;
+const int servoPin = 3;
 SFE_BMP180 pressure;
 double baseline; // BMP sensor degerlerinin olcumu icin
 Servo lid_servo;
-unsigned int voltPin = A0;
-unsigned int ldrPin = A1;
+const int voltPin = A0;
+const int ldrPin = A1;
 unsigned int ldr_Value;
 
 // Veri gonderimi ve veri durumu gozetlenmesi icin tanimlanan degiskenler

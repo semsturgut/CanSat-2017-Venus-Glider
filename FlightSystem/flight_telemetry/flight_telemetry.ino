@@ -65,10 +65,10 @@ int pic_count = 0;
 
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
 int pos;
-int buzzerPin = 9;
+const int buzzerPin = 9;
 SFE_BMP180 pressure;
 double baseline; // BMP sensor degerlerinin olcumu icin
-int voltPin = A0;
+const int voltPin = A0;
 
 // Veri gonderimi ve veri durumu gozetlenmesi icin tanimlanan degiskenler
 String time_now;
