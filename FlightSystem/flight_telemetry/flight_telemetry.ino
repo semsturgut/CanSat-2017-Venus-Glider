@@ -22,7 +22,7 @@
 
 Pressure MPXV7002DP(PRESSURE_PIN);
 
-//SoftwareSerial telemetry(1, 0);
+SoftwareSerial telemetry(1, 0);
 SoftwareSerial cameraconnection = SoftwareSerial(2, 3);
 Adafruit_VC0706 cam = Adafruit_VC0706(&cameraconnection);
 
@@ -31,8 +31,6 @@ Adafruit_VC0706 cam = Adafruit_VC0706(&cameraconnection);
 // TODO: Camera count EEPROMA kaydedilecek. @@ ECE
 // TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
 // TODO: RTC degeri sadece saniye olarak alinacak! ve surekli arttirilacak. @@ ECE
-/* TODO: Software State kismi yazilacak.
-   descent_telemetry ye benzer olabilir ya da yeni bir fonkisyon olusturulacak.*/
 
 // Butun SubFunction lar
 String getTime();
@@ -64,7 +62,6 @@ uint16_t TimeIsSet = 0xaa55;            // Saatin tekrar ayarlanmamasına yardı
 int pic_count = 0;
 
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
-int pos;
 const int buzzerPin = 9;
 SFE_BMP180 pressure;
 double baseline; // BMP sensor degerlerinin olcumu icin
@@ -72,19 +69,12 @@ const int voltPin = A0;
 
 // Veri gonderimi ve veri durumu gozetlenmesi icin tanimlanan degiskenler
 String time_now;
-double alt1tude;
-double pressure1;
-double temperature;
-double voltage;
-int heading;
-int sp33d;
 int count = 0;
-
 long previousMillis2 = 0;
 
 void setup() {
-        Serial.begin(19200);
-        //telemetry.begin(9600);
+        // Serial.begin(19200);
+        telemetry.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         RTC.setRAM(0, (uint8_t *)&startAddr, sizeof(uint16_t)); // Store startAddr in NV-RAM address 0x08
         RTC.getRAM(54, (uint8_t *)&TimeIsSet, sizeof(uint16_t));
@@ -96,10 +86,40 @@ void setup() {
         write(0x20, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali kapali 0x6A
         write(0x37, 0x02); //Bypass modu acik
         writeMag(0x0A, 0x12); // surekli olcebilmek icin manyetik sensor registeri
+
+        count++;
+        telemetry.print(F("4773,"));
+        telemetry.print(F("GLIDER,"));
+        telemetry.print(getTime());
+        telemetry.print(F(","));
+        telemetry.print(count);
+        telemetry.print(F(","));
+        telemetry.print(getAltitude());
+        telemetry.print(F(","));
+        telemetry.print(getPressure());
+        telemetry.print(F(","));
+        telemetry.print(getSpeed());
+        telemetry.print(F(","));
+        telemetry.print(getTemperature());
+        telemetry.print(F(","));
+        telemetry.print(getVoltage());
+        telemetry.print(F(","));
+        telemetry.print(getHeading());
+        telemetry.print(F(","));
+        telemetry.print(F("DEPLOY"));
+        telemetry.print(F(","));
+        telemetry.print(pic_count);
+        telemetry.println();
+        upCount(count); // count degerini EEPROM a yaziyor
+        delay(1000);
 }
 
 void loop() {
-        //Serial.println(F("Loop"));
+
+        if (count == 1) {
+
+        }
+
         if (cam.takePicture()) {
                 // Create an image with the name IMAGExx.JPG
                 char filename[13]; //dosya char olarak tanimlanip dosya uzunlugu yazilir (13)
@@ -126,41 +146,32 @@ void loop() {
                         imgFile.write(buffer, bytesToRead);
                         // Saniye basi veri gondermek icin
                         unsigned long currentMillis2 = millis();
-                        //Serial.println(currentMillis2);
                         if (currentMillis2 - previousMillis2 > 880) {
                                 previousMillis2 = currentMillis2;
                                 count++;
-                                time_now = getTime();
-                                alt1tude = getAltitude();
-                                pressure1 = getPressure ();
-                                temperature = getTemperature();
-                                voltage = getVoltage();
-                                heading = getHeading();
-                                sp33d = getSpeed();
-
-                                Serial.print(F("4773,"));
-                                Serial.print(F("GLIDER,"));
-                                Serial.print(time_now);
-                                Serial.print(F(","));
-                                Serial.print(count);
-                                Serial.print(F(","));
-                                Serial.print(alt1tude);
-                                Serial.print(F(","));
-                                Serial.print(pressure1);
-                                Serial.print(F(","));
-                                Serial.print(sp33d);
-                                Serial.print(F(","));
-                                Serial.print(temperature);
-                                Serial.print(F(","));
-                                Serial.print(voltage);
-                                Serial.print(F(","));
-                                Serial.print(heading);
-                                Serial.print(F(","));
-                                Serial.print(F("FLIGHT"));
-                                Serial.print(F(","));
-                                Serial.print(pic_count);
-                                Serial.println();
-                                upCount(count);           // count degerini EEPROM a yaziyor
+                                telemetry.print(F("4773,"));
+                                telemetry.print(F("GLIDER,"));
+                                telemetry.print(getTime());
+                                telemetry.print(F(","));
+                                telemetry.print(count);
+                                telemetry.print(F(","));
+                                telemetry.print(getAltitude());
+                                telemetry.print(F(","));
+                                telemetry.print(getPressure());
+                                telemetry.print(F(","));
+                                telemetry.print(getSpeed());
+                                telemetry.print(F(","));
+                                telemetry.print(getTemperature());
+                                telemetry.print(F(","));
+                                telemetry.print(getVoltage());
+                                telemetry.print(F(","));
+                                telemetry.print(getHeading());
+                                telemetry.print(F(","));
+                                telemetry.print(F("FLIGHT"));
+                                telemetry.print(F(","));
+                                telemetry.print(pic_count);
+                                telemetry.println();
+                                upCount(count); // count degerini EEPROM a yaziyor
                         }
                         jpglen -= bytesToRead;
                 }
@@ -171,10 +182,34 @@ void loop() {
         }
 
         // yerden 10 metre yukseklige ulastiginda buzzer calsin.
-        /* if ( getAltitude() < 10) {
-           while (1) {
-           buzzerOn();
-           mainTelemetry("LANDED",pic_count);
-           }
-           }*/
+        if ( getAltitude() < -20) {
+                while (1) {
+                        buzzerOn();
+                        count++;
+                        telemetry.print(F("4773,"));
+                        telemetry.print(F("GLIDER,"));
+                        telemetry.print(getTime());
+                        telemetry.print(F(","));
+                        telemetry.print(count);
+                        telemetry.print(F(","));
+                        telemetry.print(getAltitude());
+                        telemetry.print(F(","));
+                        telemetry.print(getPressure());
+                        telemetry.print(F(","));
+                        telemetry.print(getSpeed());
+                        telemetry.print(F(","));
+                        telemetry.print(getTemperature());
+                        telemetry.print(F(","));
+                        telemetry.print(getVoltage());
+                        telemetry.print(F(","));
+                        telemetry.print(getHeading());
+                        telemetry.print(F(","));
+                        telemetry.print(F("IDLE"));
+                        telemetry.print(F(","));
+                        telemetry.print(pic_count);
+                        telemetry.println();
+                        upCount(count); // count degerini EEPROM a yaziyor
+                        delay(1000);
+                }
+        }
 }
