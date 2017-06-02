@@ -17,8 +17,6 @@ SoftwareSerial telemetry(1, 0);
    Millis kullanilabilir.*/
 /* TODO: Descent B dusus hizi makinaci arkadaslardan
    alinan verilere gore duzenlenecek*/
-/* TODO: LDR sensorunden birden fazla deger
-   alinip ona gore isik denetimi yapilacak.*/
 
 // Butun SubFunctionlar
 void check_Modules();

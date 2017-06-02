@@ -31,6 +31,8 @@ Adafruit_VC0706 cam = Adafruit_VC0706(&cameraconnection);
 // TODO: Camera count EEPROMA kaydedilecek. @@ ECE
 // TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
 // TODO: RTC degeri sadece saniye olarak alinacak! ve surekli arttirilacak. @@ ECE
+/* TODO: Sistemin toplamda kac ms da veri gonderildigine bakilacak.
+   Millis kullanilabilir.*/
 
 // Butun SubFunction lar
 String getTime();
