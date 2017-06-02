@@ -55,6 +55,7 @@ String STATE = "DESCENT";
 double fall_alt;
 unsigned int count = 0;
 unsigned int ldr_count = 0;
+unsigned int separatedCount = 0;
 
 void setup() {
         // Serial.begin(19200); // Sensorlerin test edilmesi gerektiginde acin.
@@ -70,6 +71,7 @@ void setup() {
         write(0x6A, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali
         write(0x37, 0x02); //Bypass modu acik
         // Kurallarda yazili olan state kismi icin veri gonderimi yapiliyor.
+        count++;
         telemetry.print(F("4773,"));
         telemetry.print(F("CONTAINER,"));
         telemetry.print(getTime());
@@ -90,7 +92,9 @@ void setup() {
 
 void loop() {
         // isigi bir kere gorurse ldr_count u arttirmaya basliyor
+
         if (!ldr_count) {
+                count++;
                 telemetry.print(F("4773,"));
                 telemetry.print(F("CONTAINER,"));
                 telemetry.print(getTime());
