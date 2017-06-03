@@ -3,7 +3,7 @@
 // 2. SEA LEVEL PRESSURE (BASELINE) YARISMADAN HEMEN ONCE EEPROM A KAYDEDILECEK !!!!!
 /* @@@@@@ SAAT MODULU AYNI BOARD DA CALISIR AMA FLIGHT UZERINDE CALISMAZ ISE
    Wire.beginTransmission kodunu getTime FONKSIYONUNUN BASINA YAZIN @@@@@@*/
-// Buzzer fonksiyonunu acmayi unutmayin!!
+// Buzzer fonksiyonunu acmayi ve yukseklik degerini degistirmeyi unutmayin!!
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -27,7 +27,6 @@ SoftwareSerial cameraconnection = SoftwareSerial(2, 3);
 Adafruit_VC0706 cam = Adafruit_VC0706(&cameraconnection);
 
 // @@@ Duzenlenecekler
-// TODO: Camera count EEPROMA kaydedilecek. @@ ECE
 // TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
 // TODO: RTC degeri sadece saniye olarak alinacak! ve surekli arttirilacak. @@ ECE
 /* TODO: Sistemin toplamda kac ms da veri gonderildigine bakilacak.
