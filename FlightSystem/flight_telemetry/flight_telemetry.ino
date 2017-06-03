@@ -26,8 +26,7 @@ SoftwareSerial telemetry(1, 0);
 SoftwareSerial cameraconnection = SoftwareSerial(2, 3);
 Adafruit_VC0706 cam = Adafruit_VC0706(&cameraconnection);
 
-//@@@ Duzenlenecekler
-// TODO: Camera Function da degiskenlerin ismi anlamli bir sekilde degistirilecek. @@ ECE
+// @@@ Duzenlenecekler
 // TODO: Camera count EEPROMA kaydedilecek. @@ ECE
 // TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
 // TODO: RTC degeri sadece saniye olarak alinacak! ve surekli arttirilacak. @@ ECE
@@ -38,7 +37,7 @@ Adafruit_VC0706 cam = Adafruit_VC0706(&cameraconnection);
 String getTime();
 byte bcdToDec(byte val);
 void check_Modules();
-double getVoltage();
+float getVoltage();
 void buzzerOn();
 void buzzerOff();
 byte read(int);
@@ -60,9 +59,6 @@ uint16_t startAddr = 0x0000;            // NV-RAM'de saklamak için başlangıç
 uint16_t lastAddr;                      // NV-RAM'de saklamak için yeni adres
 uint16_t TimeIsSet = 0xaa55;            // Saatin tekrar ayarlanmamasına yardımcı olur.
 
-// Fotograf cekim sayisi.
-int pic_count = 0;
-
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
 const int buzzerPin = 9;
 SFE_BMP180 pressure;
@@ -71,8 +67,11 @@ const int voltPin = A0;
 
 // Veri gonderimi ve veri durumu gozetlenmesi icin tanimlanan degiskenler
 String time_now;
-int count = 0;
-long previousMillis2 = 0;
+unsigned int count = 0;
+unsigned long previousMillis2 = 0;
+unsigned int pic_count = 0;
+float avarageSpeed;
+
 
 void setup() {
         // Serial.begin(19200);
@@ -80,15 +79,13 @@ void setup() {
         Wire.begin(); // join i2c bus (address optional for master)
         RTC.setRAM(0, (uint8_t *)&startAddr, sizeof(uint16_t)); // Store startAddr in NV-RAM address 0x08
         RTC.getRAM(54, (uint8_t *)&TimeIsSet, sizeof(uint16_t));
-        pressure.begin();
-        baseline = getPressure();
-        check_Modules();
-        count = getCount();
+        check_Modules(); // Modul kontrolleri yapiliyor
+        count = getCount(); // count verisi EEPROM dan aliniyor
+        pic_count = getCam_count(); // pic_count verisi EEPROM dan aliniyor
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x20, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali kapali 0x6A
         write(0x37, 0x02); //Bypass modu acik
         writeMag(0x0A, 0x12); // surekli olcebilmek icin manyetik sensor registeri
-
         count++;
         telemetry.print(F("4773,"));
         telemetry.print(F("GLIDER,"));
@@ -118,10 +115,6 @@ void setup() {
 
 void loop() {
 
-        if (count == 1) {
-
-        }
-
         if (cam.takePicture()) {
                 // Create an image with the name IMAGExx.JPG
                 char filename[13]; //dosya char olarak tanimlanip dosya uzunlugu yazilir (13)
@@ -134,7 +127,6 @@ void loop() {
                                 break;
                         }
                 }
-
                 File imgFile = SD.open(filename, FILE_WRITE);
                 uint16_t jpglen = cam.frameLength();
                 int32_t time = millis();
@@ -174,6 +166,7 @@ void loop() {
                                 telemetry.print(pic_count);
                                 telemetry.println();
                                 upCount(count); // count degerini EEPROM a yaziyor
+                                upCam_count(pic_count);
                         }
                         jpglen -= bytesToRead;
                 }

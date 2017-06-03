@@ -23,28 +23,26 @@ byte bcdToDec(byte val)  {
 
 void check_Modules() {
         if (!pressure.begin()) {
-                Serial.println("ERR:BMP");
-        }
-        if (!Wire.requestFrom(DS1307_ADDRESS, 7)) { //RTC check islemine farkli bir algoritma yapilacaktir.
-                Serial.println("ERR:RTC");
+                telemetry.println(F("ERR:BMP"));
         }
         if (!SD.begin(10)) {
-                Serial.println("ERR:SD");
+                telemetry.println(F("ERR:SD"));
         }
         if (!cam.begin()) {
-                Serial.println("ERR:CAM");
+                telemetry.println(F("ERR:CAM"));
         } else {
                 cam.setImageSize(VC0706_640x480);
         }
-        MPXV7002DP.Init();
+        baseline = getPressure(); // Deniz seviyesi basinci aliniyor
+        MPXV7002DP.Init(); // Pitot tube baslatiliyor .. Fakat Uzun suruyor
 }
 
 // Voltage divider a gore analog voltage okuma
-double getVoltage() {
-        double R1 = 9710.0, R2 = 9360.0;
-        double Vout = 0.0;
-        double Vin = 0.0;
-        int sensorValue = analogRead(voltPin);
+float getVoltage() {
+        float R1 = 9710.0, R2 = 9360.0;
+        float Vout = 0.0;
+        float Vin = 0.0;
+        unsigned int sensorValue = analogRead(voltPin);
         // Convert the analo reading (which goes from 0 - 1023) to a voltage (0 - 5V):
         Vout = sensorValue * (5.0 / 1023.0);
         // voltage divider uzerinden giris gerilimi hesaplama
@@ -168,13 +166,19 @@ void upCount(int up_count) {
 
 // pitot tube uzerinden hizin gelen analog degerinin m/s olarak degistirilmesi
 int getSpeed () {
+        avarageSpeed = 0;
+        for (size_t i = 0; i < 10; i++) {
+                avarageSpeed += MPXV7002DP.GetAirSpeed();
+        }
+        // Serial.println(avarageSpeed/10);
         return MPXV7002DP.GetAirSpeed();
 }
 
-//saving camera count from EEPROM
+// saving camera count to EEPROM
 int getCam_count(){
-        return EEPROM.read (0);
+        return EEPROM.read (1);
 }
+// getting camera count from EEPROM
 int upCam_count(int pic_count){
-        EEPROM.update (0, pic_count);
+        EEPROM.update (1, pic_count);
 }
