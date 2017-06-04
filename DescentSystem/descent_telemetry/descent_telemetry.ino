@@ -1,5 +1,6 @@
 // GENEL DIKKAT EDILMESI GEREKENLER
 // EKLENECEK!!
+// Yarisma alaninda zemin pressure degeri kaydedilecek.
 
 #include <Wire.h>
 #include <Servo.h>
@@ -15,6 +16,8 @@
 
 SoftwareSerial telemetry(1, 0);
 // @@@ Duzenlenecekler
+// TODO: Test et Barometre sensoru pressure degeri degismez bir degisken seklinde kaydedilecek
+
 // TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
 /* TODO: Sistemin toplamda kac ms da veri gonderildigine bakilacak.
    Millis kullanilabilir.*/
@@ -64,13 +67,17 @@ double fall_alt;
 unsigned int count = 0;
 unsigned int ldr_count = 0;
 unsigned int separatedCount = 0;
+unsigned int silenceCount = 0;
+unsigned int descentCount = 0;
 
 void setup() {
-        Serial.begin(19200); // Sensorlerin test edilmesi gerektiginde acin.
+        // Serial.begin(19200); // Sensorlerin test edilmesi gerektiginde acin.
         telemetry.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
+        delay(5000);
         servoClose(); // servoyu kapali konuma getirir.
+        lid_servo.detach();
         pressure.begin(); // bmp sensorunu baslatir
         baseline = getPressure();
         // check_Modules(); // Sensorlerin test edilmesi gerektiginde acin.
@@ -78,6 +85,7 @@ void setup() {
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x6A, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali
         write(0x37, 0x02); //Bypass modu acik
+
         // Initialize a new chip by turning off write protection and clearing the
         // clock halt flag. These methods needn't always be called. See the DS1302
         // datasheet for details.
@@ -89,6 +97,7 @@ void setup() {
         // Set the time and date on the chip.
         rtc.time(t);
         // State kismi icin veri BOOT'da oldugumuzu gosteren veri gonderimi yapiliyor.
+
         count++;
         telemetry.print(F("4773,"));
         telemetry.print(F("CONTAINER,"));
@@ -110,7 +119,6 @@ void setup() {
 
 void loop() {
         // isigi bir kere gorurse ldr_count u arttirmaya basliyor
-
         if (!ldr_count) {
                 count++;
                 telemetry.print(F("4773,"));
@@ -137,6 +145,18 @@ void loop() {
         }
         // ldr count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
         if (ldr_count) {
+
+                // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
+                // ya da sadece 100 metrenin uzerinde oldugu zaman millis iceren ikinci ayrilma fonksiyonunu calistir
+                if (/*getAltitude() > 100 &&*/ getAltitude() < 160 && !descentCount) {
+                        descentCount++;
+                        servoOpen();
+                        STATE = "SEPARATED";
+                } /*else if (getAltitude() < 140 && lid_servo.read() >= 120) { // TODO: 390 metre ve servo acik olmadigi zaman descenB yi calistirmak gerekiyor
+                     descentB(fall_alt);
+                     STATE = "PLAN-B";
+                     }*/
+
                 count++;
                 // Veriyi telemetri ile ground station a gonderdiyor
                 telemetry.print(F("4773,"));
@@ -155,20 +175,14 @@ void loop() {
                 telemetry.println();
                 upCount(count);
 
-                // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
-                // ya da sadece 100 metrenin uzerinde oldugu zaman millis iceren ikinci ayrilma fonksiyonunu calistir
-                if (getAltitude() > 100 && getAltitude() < 410) {
-                        servoOpen();
-                        STATE = "SEPARATED";
-                } else if (getAltitude() > 100) { // TODO: 390 metre ve servo acik olmadigi zaman descenB yi calistirmak gerekiyor
-                        descentB(fall_alt);
-                        STATE = "PLAN-B";
-                }
                 // Servo aciksa kapak acilmis demektir
                 // Kapak acildigindan 2 saniye sonra veriyi kesiyor
-                if (lid_servo.read() > 160) {
+                if (lid_servo.read() < 120) {
+                        if (silenceCount) {
+                                wait2secs();
+                        }
+                        silenceCount++;
                         STATE = "2SECS-2SILENCE";
-                        wait2secs();
                 }
                 delay(980);
         }
