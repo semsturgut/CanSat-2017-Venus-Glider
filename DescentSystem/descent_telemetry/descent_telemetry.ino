@@ -18,9 +18,6 @@
 
 // @@@ Duzenlenecekler
 // TODO: Test et Barometre sensoru pressure degeri degismez bir degisken seklinde kaydedilecek
-// TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
-/* TODO: Sistemin toplamda kac ms da veri gonderildigine bakilacak.
-   Millis kullanilabilir.*/
 /* TODO: Descent B dusus hizi makinaci arkadaslardan
    alinan verilere gore duzenlenecek*/
 
@@ -71,6 +68,7 @@ unsigned int silenceCount = 0;
 unsigned int descentCount = 0;
 
 void setup() {
+  
   Serial.begin(9600);
   Wire.begin(); // join i2c bus (address optional for master)
   lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
@@ -114,7 +112,7 @@ void setup() {
   Serial.println();
   upCount(count);
   delay(1000);
-}
+  }
 
 void loop() {
   // isigi bir kere gorurse ldr_count u arttirmaya basliyor
