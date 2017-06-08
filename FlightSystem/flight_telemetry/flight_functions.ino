@@ -1,16 +1,33 @@
 // Saat fonksiyonu saat:dakika:saniye degeri string olarak geri donuyor
 String getTime() {
-        // Reset the register pointer
-        // Wire.beginTransmission(); // Kod bu olmayabilir internetten bak!!
-        byte zero = 0x00;
-        Wire.write(zero);
-        Wire.endTransmission();
-        Wire.requestFrom(DS1307_ADDRESS, 7);
-        int second = bcdToDec(Wire.read());
-        int minute = bcdToDec(Wire.read());
-        int hour = bcdToDec(Wire.read() & 0b111111); //24 hour time
-        String time_n = String(hour, DEC) + ':' + String(minute, DEC) + ':' + String(second, DEC);
+        // Get the current time and date from the chip.
+        Time t = rtc.time();
+
+        // Name the day of the week.
+        const String day = dayAsString(t.day);
+
+        // Format the time and date and insert into the temporary buffer.
+        char buf[50];
+        snprintf(buf, sizeof(buf), "%02d:%02d:%02d",
+                 t.hr, t.min, t.sec);
+
+        // Print the formatted string to serial so we can see the time.
+        time_n = buf;
+        // Serial.println(time_n);
         return time_n;
+}
+
+String dayAsString(const Time::Day day) {
+        switch (day) {
+        case Time::kSunday: return F("Sunday");
+        case Time::kMonday: return F("Monday");
+        case Time::kTuesday: return F("Tuesday");
+        case Time::kWednesday: return F("Wednesday");
+        case Time::kThursday: return F("Thursday");
+        case Time::kFriday: return F("Friday");
+        case Time::kSaturday: return F("Saturday");
+        }
+        return F("(unknown day)");
 }
 
 byte bcdToDec(byte val)  {
@@ -23,13 +40,13 @@ byte bcdToDec(byte val)  {
 
 void check_Modules() {
         if (!pressure.begin()) {
-                telemetry.println(F("ERR:BMP"));
+                Serial.println(F("ERR:BMP"));
         }
         if (!SD.begin(10)) {
-                telemetry.println(F("ERR:SD"));
+                Serial.println(F("ERR:SD"));
         }
         if (!cam.begin()) {
-                telemetry.println(F("ERR:CAM"));
+                Serial.println(F("ERR:CAM"));
         } else {
                 cam.setImageSize(VC0706_640x480);
         }
@@ -170,7 +187,6 @@ int getSpeed () {
         for (size_t i = 0; i < 10; i++) {
                 avarageSpeed += MPXV7002DP.GetAirSpeed();
         }
-        // Serial.println(avarageSpeed/10);
         return MPXV7002DP.GetAirSpeed();
 }
 

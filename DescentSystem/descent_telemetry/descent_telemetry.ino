@@ -1,6 +1,8 @@
 // GENEL DIKKAT EDILMESI GEREKENLER
 // EKLENECEK!!
-// Yarisma alaninda zemin pressure degeri kaydedilecek.
+// Yarisma alaninda zemin pressure degeri kaydedilecek
+// Yarismadan once butun guc sistemi + saat pili devreden cikarilip bir sure beklenilecek
+// Yarismadan once setup daki delaylar silinecek!
 
 #include <Wire.h>
 #include <Servo.h>
@@ -14,10 +16,8 @@
 // RTC register tanimlamasi
 #define DS1307_ADDRESS 0x68
 
-SoftwareSerial telemetry(1, 0);
 // @@@ Duzenlenecekler
 // TODO: Test et Barometre sensoru pressure degeri degismez bir degisken seklinde kaydedilecek
-
 // TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
 /* TODO: Sistemin toplamda kac ms da veri gonderildigine bakilacak.
    Millis kullanilabilir.*/
@@ -71,16 +71,15 @@ unsigned int silenceCount = 0;
 unsigned int descentCount = 0;
 
 void setup() {
-        // Serial.begin(19200); // Sensorlerin test edilmesi gerektiginde acin.
-        telemetry.begin(9600);
+        Serial.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
-        delay(5000);
+        delay(5000); // Yarismadan once silinecek!
         servoClose(); // servoyu kapali konuma getirir.
         lid_servo.detach();
         pressure.begin(); // bmp sensorunu baslatir
         baseline = getPressure();
-        // check_Modules(); // Sensorlerin test edilmesi gerektiginde acin.
+        check_Modules(); // Sensorlerin test edilmesi gerektiginde acin.
         count = getCount();
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x6A, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali
@@ -96,23 +95,23 @@ void setup() {
         Time t(2017, 5, 26, 00, 00, 00, Time::kSunday);
         // Set the time and date on the chip.
         rtc.time(t);
-        // State kismi icin veri BOOT'da oldugumuzu gosteren veri gonderimi yapiliyor.
 
+        // State kismi icin veri BOOT'da oldugumuzu gosteren veri gonderimi yapiliyor.
         count++;
-        telemetry.print(F("4773,"));
-        telemetry.print(F("CONTAINER,"));
-        telemetry.print(getTime());
-        telemetry.print(F(","));
-        telemetry.print(count);
-        telemetry.print(F(","));
-        telemetry.print(getAltitude());
-        telemetry.print(F(","));
-        telemetry.print(getTemperature());
-        telemetry.print(F(","));
-        telemetry.print(getVoltage());
-        telemetry.print(F(","));
-        telemetry.print(F("BOOT"));
-        telemetry.println();
+        Serial.print(F("4773,"));
+        Serial.print(F("CONTAINER,"));
+        Serial.print(getTime());
+        Serial.print(F(","));
+        Serial.print(count);
+        Serial.print(F(","));
+        Serial.print(getAltitude());
+        Serial.print(F(","));
+        Serial.print(getTemperature());
+        Serial.print(F(","));
+        Serial.print(getVoltage());
+        Serial.print(F(","));
+        Serial.print(F("BOOT"));
+        Serial.println();
         upCount(count);
         delay(1000);
 }
@@ -121,20 +120,20 @@ void loop() {
         // isigi bir kere gorurse ldr_count u arttirmaya basliyor
         if (!ldr_count) {
                 count++;
-                telemetry.print(F("4773,"));
-                telemetry.print(F("CONTAINER,"));
-                telemetry.print(getTime());
-                telemetry.print(F(","));
-                telemetry.print(count);
-                telemetry.print(F(","));
-                telemetry.print(getAltitude());
-                telemetry.print(F(","));
-                telemetry.print(getTemperature());
-                telemetry.print(F(","));
-                telemetry.print(getVoltage());
-                telemetry.print(F(","));
-                telemetry.print(F("IDLE"));
-                telemetry.println();
+                Serial.print(F("4773,"));
+                Serial.print(F("CONTAINER,"));
+                Serial.print(getTime());
+                Serial.print(F(","));
+                Serial.print(count);
+                Serial.print(F(","));
+                Serial.print(getAltitude());
+                Serial.print(F(","));
+                Serial.print(getTemperature());
+                Serial.print(F(","));
+                Serial.print(getVoltage());
+                Serial.print(F(","));
+                Serial.print(F("IDLE"));
+                Serial.println();
                 upCount(count);
                 delay(1000);
         }
@@ -159,20 +158,20 @@ void loop() {
 
                 count++;
                 // Veriyi telemetri ile ground station a gonderdiyor
-                telemetry.print(F("4773,"));
-                telemetry.print(F("CONTAINER,"));
-                telemetry.print(getTime());
-                telemetry.print(F(","));
-                telemetry.print(count);
-                telemetry.print(F(","));
-                telemetry.print(getAltitude());
-                telemetry.print(F(","));
-                telemetry.print(getTemperature());
-                telemetry.print(F(","));
-                telemetry.print(getVoltage());
-                telemetry.print(F(","));
-                telemetry.print(STATE); // Yazilimin durumuna gore degisiyor.
-                telemetry.println();
+                Serial.print(F("4773,"));
+                Serial.print(F("CONTAINER,"));
+                Serial.print(getTime());
+                Serial.print(F(","));
+                Serial.print(count);
+                Serial.print(F(","));
+                Serial.print(getAltitude());
+                Serial.print(F(","));
+                Serial.print(getTemperature());
+                Serial.print(F(","));
+                Serial.print(getVoltage());
+                Serial.print(F(","));
+                Serial.print(STATE); // Yazilimin durumuna gore degisiyor.
+                Serial.println();
                 upCount(count);
 
                 // Servo aciksa kapak acilmis demektir
