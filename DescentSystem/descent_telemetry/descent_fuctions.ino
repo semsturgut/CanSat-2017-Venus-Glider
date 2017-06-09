@@ -187,7 +187,7 @@ void upCount(int up_count) {
 // hesaba katip o hesaba gore 400 metreye ulasma suresini hesapliyor.
 // dist_X Container'dan ayrildigi anda ki yukseklik
 // Test parasutu 500 gr 9.17s
-void descentB(float dist_X) {
+/*void descentB(float dist_X) {
         float grav = 9.81;
         long previousMillis = 0;
         float dist_Y = 390; //
@@ -202,7 +202,7 @@ void descentB(float dist_X) {
                 servoOpen();
         }
 
-}
+   }*/
 
 // fonksiyon basladiktan 2 saniye sonra veriyi gondermeyi durdurmak icin
 // sonsuz donguye giriyor ve yukseklik 20m nin altina inince buzzer aciliyor.

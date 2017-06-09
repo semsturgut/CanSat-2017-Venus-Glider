@@ -46,7 +46,7 @@ void write(int, int);
 double getAltitude();
 double getTemperature();
 double getPressure();
-int getHeading();
+float getHeading();
 int getSpeed ();
 int getCount();
 void upCount(int);
@@ -58,7 +58,7 @@ int upCam_count(int);
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
 const int buzzerPin = 9;
 SFE_BMP180 pressure;
-double baseline; // BMP sensor degerlerinin olcumu icin
+float baseline; // BMP sensor degerlerinin olcumu icin
 const int voltPin = A0;
 const int kCePin   = 8;  // Chip Enable
 const int kIoPin   = 7;  // Input/Output
@@ -72,6 +72,7 @@ unsigned int count = 0;
 unsigned long previousMillis2 = 0;
 unsigned int pic_count = 0;
 float avarageSpeed;
+const float pi = 3.14159;
 
 
 void setup() {
@@ -80,6 +81,7 @@ void setup() {
         check_Modules(); // Modul kontrolleri yapiliyor
         count = getCount(); // count verisi EEPROM dan aliniyor
         pic_count = getCam_count(); // pic_count verisi EEPROM dan aliniyor
+        baseline = getPressure();
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x20, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali kapali 0x6A
         write(0x37, 0x02); //Bypass modu acik
@@ -125,7 +127,32 @@ void setup() {
 
 void loop() {
 
-        if (cam.takePicture()) {
+        count++;
+        Serial.print(F("4773,"));
+        Serial.print(F("GLIDER,"));
+        Serial.print(getTime());
+        Serial.print(F(","));
+        Serial.print(count);
+        Serial.print(F(","));
+        Serial.print(getAltitude());
+        Serial.print(F(","));
+        Serial.print(getPressure());
+        Serial.print(F(","));
+        Serial.print(getSpeed());
+        Serial.print(F(","));
+        Serial.print(getTemperature());
+        Serial.print(F(","));
+        Serial.print(getVoltage());
+        Serial.print(F(","));
+        Serial.print(getHeading());
+        Serial.print(F(","));
+        Serial.print(F("FLIGHT"));
+        Serial.print(F(","));
+        Serial.print(pic_count);
+        Serial.println();
+        upCount(count); // count degerini EEPROM a yaziyor
+
+        /*if (cam.takePicture()) {
                 // Create an image with the name IMAGExx.JPG
                 char filename[13]; //dosya char olarak tanimlanip dosya uzunlugu yazilir (13)
                 strcpy(filename, "IMAGE00.JPG");
@@ -184,10 +211,10 @@ void loop() {
                 pic_count += 1;
                 //Needed to buffer new image
                 cam.resumeVideo();
-        }
+           }*/
 
         // yerden 10 metre yukseklige ulastiginda buzzer calsin.
-        if ( getAltitude() < -20) {
+        if ( getAltitude() < 20) {
                 while (1) {
                         buzzerOn();
                         count++;

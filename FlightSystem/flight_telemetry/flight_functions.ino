@@ -45,12 +45,11 @@ void check_Modules() {
         if (!SD.begin(10)) {
                 Serial.println(F("ERR:SD"));
         }
-        if (!cam.begin()) {
+        /*if (!cam.begin()) {
                 Serial.println(F("ERR:CAM"));
-        } else {
+           } else {
                 cam.setImageSize(VC0706_640x480);
-        }
-        baseline = getPressure(); // Deniz seviyesi basinci aliniyor
+           }*/
         MPXV7002DP.Init(); // Pitot tube baslatiliyor .. Fakat Uzun suruyor
 }
 
@@ -142,7 +141,7 @@ double getTemperature() {
         }
 }
 //magnetometer degerlerini alma islemi
-int getHeading() {
+float getHeading() {
         int xh = readMag(0x04); // x yonunu oku, high byte
         int xl = readMag(0x03); // x yonunu oku, low byte
         int yh = readMag(0x06);
@@ -153,7 +152,7 @@ int getHeading() {
         int x = (xh << 8) | (xl & 0xff);
         int y = (yh << 8) | (yl & 0xff);
         int z = (zh << 8) | (zl & 0xff);
-        return x;
+        return atan(y/x)*180/pi;
 }
 
 // Basinc degerlerini alma islemi
