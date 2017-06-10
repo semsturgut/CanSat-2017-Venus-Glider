@@ -63,18 +63,21 @@ DS1302 rtc(kCePin, kIoPin, kSclkPin);
 // Veri gonderimi ve veri durumu gozetlenmesi icin tanimlanan degiskenler
 String time_n;
 String STATE = "DESCENT";
-double fall_alt;
+// double fall_alt;
 unsigned int count = 0;
 unsigned int ldr_count = 0;
 unsigned int separatedCount = 0;
 unsigned int silenceCount = 0;
 unsigned int descentCount = 0;
-
+int LED_PIN ;
 void setup() {
         Serial.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
-        delay(5000); // Yarismadan once silinecek!
+        pinMode(5, OUTPUT);
+        digitalWrite(5, HIGH);
+        delay(1000); // Yarismadan once silinecek!
+        digitalWrite(5, LOW);
         servoClose(); // servoyu kapali konuma getirir.
         lid_servo.detach();
         pressure.begin(); // bmp sensorunu baslatir
@@ -138,19 +141,18 @@ void loop() {
                 delay(1000);
         }
 
-        if (!ldr_count && check_light()) {
+        if (!ldr_count && check_Altitude()) {
                 ldr_count = 1;
-                fall_alt = getAltitude();
         }
         // ldr count arttirilmissa isigi gormus demektir ve sistemler calismaya baslayacaktir
         if (ldr_count) {
 
                 // 100 metrenin uzerinde ve 410 metrenin altinda oldugu zaman servoyu ac
                 // ya da sadece 100 metrenin uzerinde oldugu zaman millis iceren ikinci ayrilma fonksiyonunu calistir
-                if (/*getAltitude() > 100 &&*/ getAltitude() < 160 && !descentCount) {
+                if (getAltitude() < 410 && !descentCount) {
                         descentCount++;
                         servoOpen();
-                        STATE = "SEPARATED";
+                        STATE = "OPENLID";
                 } /*else if (getAltitude() < 140 && lid_servo.read() >= 120) { // TODO: 390 metre ve servo acik olmadigi zaman descenB yi calistirmak gerekiyor
                      descentB(fall_alt);
                      STATE = "PLAN-B";

@@ -164,12 +164,20 @@ double getPressure() {
 //@@BMP side end
 
 //ortamin aydinlik mi karanlik mi oldugunu anlayan fonksiyon
-int check_light () {
+/*int check_light () {
         ldr_Value = analogRead(ldrPin);
         if (ldr_Value > 500) { // 20 den kucukse ortam karanliktir 0 gonderir
                 return 0;
         } else { //20 den buyukse ortam aydinlik 1 gönderir
                 return 1;
+        }
+   }*/
+
+int check_Altitude() {
+        if (getAltitude() >= 550) {
+                return 1;
+        } else {
+                return 0;
         }
 }
 

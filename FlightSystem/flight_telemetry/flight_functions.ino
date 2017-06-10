@@ -42,9 +42,9 @@ void check_Modules() {
         if (!pressure.begin()) {
                 Serial.println(F("ERR:BMP"));
         }
-        if (!SD.begin(10)) {
+        /*if (!SD.begin(10)) {
                 Serial.println(F("ERR:SD"));
-        }
+        }*/
         /*if (!cam.begin()) {
                 Serial.println(F("ERR:CAM"));
            } else {

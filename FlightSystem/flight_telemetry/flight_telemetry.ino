@@ -10,7 +10,7 @@
 #include <Wire.h>
 #include <stdio.h>
 #include <DS1302.h>
-#include <SD.h>
+// #include <SD.h>
 #include <SPI.h>
 #include <SFE_BMP180.h>
 #include <EEPROM.h>
