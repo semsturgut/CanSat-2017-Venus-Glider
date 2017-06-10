@@ -174,7 +174,7 @@ double getPressure() {
    }*/
 
 int check_Altitude() {
-        if (getAltitude() >= 550) {
+        if (getAltitude() < 550) {
                 return 1;
         } else {
                 return 0;

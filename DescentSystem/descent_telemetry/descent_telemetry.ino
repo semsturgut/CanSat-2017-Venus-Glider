@@ -69,15 +69,11 @@ unsigned int ldr_count = 0;
 unsigned int separatedCount = 0;
 unsigned int silenceCount = 0;
 unsigned int descentCount = 0;
-int LED_PIN ;
+int LED_PIN;
 void setup() {
         Serial.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
-        pinMode(5, OUTPUT);
-        digitalWrite(5, HIGH);
-        delay(1000); // Yarismadan once silinecek!
-        digitalWrite(5, LOW);
         servoClose(); // servoyu kapali konuma getirir.
         lid_servo.detach();
         pressure.begin(); // bmp sensorunu baslatir
