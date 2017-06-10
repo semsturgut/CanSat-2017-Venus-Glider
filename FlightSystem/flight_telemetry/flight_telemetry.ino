@@ -1,16 +1,15 @@
 // GENEL DIKKAT EDILMESI GEREKENLER!!!
 // 1. PITOT TUBE KUTUPHANESI ICERISINDE BULUNAN KM/H DEGERI ILE M/S DEGERI YER DEGISTIRILMELIDIR
 // 2. SEA LEVEL PRESSURE (BASELINE) YARISMADAN HEMEN ONCE EEPROM A KAYDEDILECEK !!!!!
-/* @@@@@@ SAAT MODULU AYNI BOARD DA CALISIR AMA FLIGHT UZERINDE CALISMAZ ISE
-   Wire.beginTransmission kodunu getTime FONKSIYONUNUN BASINA YAZIN @@@@@@*/
 // Buzzer fonksiyonunu acmayi ve yukseklik degerini degistirmeyi unutmayin!!
 // Kamera acilari kontrol edilecek
+// Sayac yarismadan once sifirlanacak
+// Saat ve tarih ayarlanip kodlari kapatilacak.  writeProtect yarismadan once false yapilacak
 
 #include <Arduino.h>
 #include <Wire.h>
 #include <stdio.h>
 #include <DS1302.h>
-// #include <SD.h>
 #include <SPI.h>
 #include <SFE_BMP180.h>
 #include <EEPROM.h>
@@ -28,10 +27,6 @@ SoftwareSerial cameraconnection = SoftwareSerial(2, 3);
 Adafruit_VC0706 cam = Adafruit_VC0706(&cameraconnection);
 
 // @@@ Duzenlenecekler
-// TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
-// TODO: RTC degeri sadece saniye olarak alinacak! ve surekli arttirilacak. @@ ECE
-/* TODO: Sistemin toplamda kac ms da veri gonderildigine bakilacak.
-   Millis kullanilabilir.*/
 
 // Butun SubFunction lar
 String getTime();
@@ -52,8 +47,8 @@ int getCount();
 void upCount(int);
 byte readMag(int);
 void writeMag(int, int);
-int getCam_count();
-int upCam_count(int);
+// int getCam_count();
+// int upCam_count(int);
 
 // Alt fonksiyonlarda tanimlanan kontrol ve islem degiskenleri
 const int buzzerPin = 9;
@@ -80,7 +75,7 @@ void setup() {
         Wire.begin(); // join i2c bus (address optional for master)
         check_Modules(); // Modul kontrolleri yapiliyor
         count = getCount(); // count verisi EEPROM dan aliniyor
-        pic_count = getCam_count(); // pic_count verisi EEPROM dan aliniyor
+        // pic_count = getCam_count(); // pic_count verisi EEPROM dan aliniyor
         baseline = getPressure();
         write(0x6B, 0); //Guc yonetimi registeri default:0
         write(0x20, 0); // I2C master kapali, acik olmasini istiyorsaniz 0x20 olmali kapali 0x6A
@@ -90,13 +85,16 @@ void setup() {
         // Initialize a new chip by turning off write protection and clearing the
         // clock halt flag. These methods needn't always be called. See the DS1302
         // datasheet for details.
-        rtc.writeProtect(false);
+        // TODO: writeProtect yarismadan once false yapilacak
+        rtc.writeProtect(true);
         rtc.halt(false);
         // Make a new time object to set the date and time.
         // Sunday, September 22, 2013 at 01:38:50.
         Time t(2017, 5, 26, 00, 00, 00, Time::kSunday);
         // Set the time and date on the chip.
         rtc.time(t);
+        // TODO: Sayac yarismadan once sifirlanacak
+        // upCount(0);
 
         count++;
         Serial.print(F("4773,"));
@@ -236,7 +234,7 @@ void loop() {
                         Serial.print(F(","));
                         Serial.print(getHeading());
                         Serial.print(F(","));
-                        Serial.print(F("IDLE"));
+                        Serial.print(F("LANDED"));
                         Serial.print(F(","));
                         Serial.print(pic_count);
                         Serial.println();

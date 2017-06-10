@@ -2,18 +2,14 @@
 String getTime() {
         // Get the current time and date from the chip.
         Time t = rtc.time();
-
         // Name the day of the week.
         const String day = dayAsString(t.day);
-
         // Format the time and date and insert into the temporary buffer.
         char buf[50];
         snprintf(buf, sizeof(buf), "%02d:%02d:%02d",
                  t.hr, t.min, t.sec);
-
         // Print the formatted string to serial so we can see the time.
         time_n = buf;
-        // Serial.println(time_n);
         return time_n;
 }
 
@@ -68,8 +64,6 @@ float getVoltage() {
 
 // Servonun acik pozisyondaki kontrolu ve acik degil ise servoyu ac
 void servoClose () {
-        // if (lid_servo.read() > 120) {  //100 derece stok kapali konum anlamina geliyor. 93 ise kapalidir ve acilis konuma girer
-        // 1 derecelik adimlarla
         for (pos = 90; pos <= 200; pos += 1) { // goes from 0 degrees to 180 degrees
                 // in steps of 1 degree
                 lid_servo.write(pos);  // tell servo to go to position in variable 'pos'
@@ -77,20 +71,16 @@ void servoClose () {
         }
         delay(1000);
         lid_servo.detach();
-        // }
 }
 
 // Servonun kapali pozisyondaki kontrolu ve kapali degil ise kapat
 void servoOpen() {
-        // if (lid_servo.read() <= 120) {  //100 derece stok kapali konum anlamina geliyor. 93 ise degil ise aciktir ve kapanis konuma girer
-        // 1 derecelik adimlarla
         lid_servo.attach(servoPin);
         for (pos = 180; pos >= 80; pos -= 1) {   // Servo 'kapat'den 'ac' pozisyonuna 180 derece donecek.
                 lid_servo.write(pos); // Belirlenen pozisyona gitmesi isteniyor.
                 delay(5); // Pozisyona 10 ms de ulasiyor
         }
         lid_servo.detach();
-        // }
 }
 
 // Buzzer i acip tonunu 261 e ayarliyor.
@@ -163,7 +153,7 @@ double getPressure() {
 }
 //@@BMP side end
 
-//ortamin aydinlik mi karanlik mi oldugunu anlayan fonksiyon
+// Ortamin aydinlik mi karanlik mi oldugunu anlayan fonksiyon
 /*int check_light () {
         ldr_Value = analogRead(ldrPin);
         if (ldr_Value > 500) { // 20 den kucukse ortam karanliktir 0 gonderir
@@ -174,7 +164,7 @@ double getPressure() {
    }*/
 
 int check_Altitude() {
-        if (getAltitude() < 550) {
+        if (getAltitude() >= 550) {
                 return 1;
         } else {
                 return 0;
@@ -195,11 +185,11 @@ void upCount(int up_count) {
 // hesaba katip o hesaba gore 400 metreye ulasma suresini hesapliyor.
 // dist_X Container'dan ayrildigi anda ki yukseklik
 // Test parasutu 500 gr 9.17s
-/*void descentB(float dist_X) {
+void descentB(float dist_X) {
         float grav = 9.81;
         long previousMillis = 0;
-        float dist_Y = 390; //
-        float time_X = 1.50, time_Y; //Parasut acilana kadar gecen sure
+        float dist_Y = 400;
+        float time_X = 1.50, time_Y; // Parasut acilana kadar gecen sure
         time_Y = ((dist_X - (grav * pow(time_X, 2) / 2) - dist_Y) / 10.87) * 1000;
         // ardunio calisma suresi milisaniye cinsinden sayiyor.
         unsigned long currentMillis = millis();
@@ -210,7 +200,7 @@ void upCount(int up_count) {
                 servoOpen();
         }
 
-   }*/
+}
 
 // fonksiyon basladiktan 2 saniye sonra veriyi gondermeyi durdurmak icin
 // sonsuz donguye giriyor ve yukseklik 20m nin altina inince buzzer aciliyor.

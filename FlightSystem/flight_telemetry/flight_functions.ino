@@ -2,18 +2,14 @@
 String getTime() {
         // Get the current time and date from the chip.
         Time t = rtc.time();
-
         // Name the day of the week.
         const String day = dayAsString(t.day);
-
         // Format the time and date and insert into the temporary buffer.
         char buf[50];
         snprintf(buf, sizeof(buf), "%02d:%02d:%02d",
                  t.hr, t.min, t.sec);
-
         // Print the formatted string to serial so we can see the time.
         time_n = buf;
-        // Serial.println(time_n);
         return time_n;
 }
 
@@ -35,16 +31,13 @@ byte bcdToDec(byte val)  {
         return ( (val / 16 * 10) + (val % 16) );
 }
 
-// @@@@@@ SAAT MODULU AYNI BOARD DA CALISIR AMA FLIGHT UZERINDE CALISMAZ ISE
-// Wire.beginTransmission kodunu getTime FONKSIYONUNUN BASINA YAZIN @@@@@@
-
 void check_Modules() {
         if (!pressure.begin()) {
                 Serial.println(F("ERR:BMP"));
         }
         /*if (!SD.begin(10)) {
                 Serial.println(F("ERR:SD"));
-        }*/
+           }*/
         /*if (!cam.begin()) {
                 Serial.println(F("ERR:CAM"));
            } else {
@@ -130,7 +123,6 @@ double getAltitude() {
 double getTemperature() {
         char status;
         double T;
-
         status = pressure.startTemperature(); // Sicaklik degeri alma islemi baslatiliyor
         if (status != 0) {
                 delay(status);
@@ -189,11 +181,12 @@ int getSpeed () {
         return MPXV7002DP.GetAirSpeed();
 }
 
-// saving camera count to EEPROM
-int getCam_count(){
+/*
+   // saving camera count to EEPROM
+   int getCam_count(){
         return EEPROM.read (1);
-}
-// getting camera count from EEPROM
-int upCam_count(int pic_count){
+   }
+   // getting camera count from EEPROM
+   int upCam_count(int pic_count){
         EEPROM.update (1, pic_count);
-}
+   }*/

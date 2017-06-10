@@ -3,6 +3,10 @@
 // Yarisma alaninda zemin pressure degeri kaydedilecek
 // Yarismadan once butun guc sistemi + saat pili devreden cikarilip bir sure beklenilecek
 // Yarismadan once setup daki delaylar silinecek!
+// Yarismadan once saat pili bantla yapistirilacak!
+// Sayac yarismadan once sifirlanacak
+// Saat ve tarih ayarlanip kodlari kapatilacak.  writeProtect yarismadan once false yapilacak
+
 
 #include <Wire.h>
 #include <Servo.h>
@@ -17,12 +21,9 @@
 #define DS1307_ADDRESS 0x68
 
 // @@@ Duzenlenecekler
-// TODO: Test et Barometre sensoru pressure degeri degismez bir degisken seklinde kaydedilecek
-// TODO: RTC DS1302 ye gore baslatilma fonksiyonu yazilacak
-/* TODO: Sistemin toplamda kac ms da veri gonderildigine bakilacak.
-   Millis kullanilabilir.*/
 /* TODO: Descent B dusus hizi makinaci arkadaslardan
    alinan verilere gore duzenlenecek*/
+// TODO: Servo acilari makinaci arkadaslardan alinacak
 
 // Butun SubFunctionlar
 void check_Modules();
@@ -63,14 +64,16 @@ DS1302 rtc(kCePin, kIoPin, kSclkPin);
 // Veri gonderimi ve veri durumu gozetlenmesi icin tanimlanan degiskenler
 String time_n;
 String STATE = "DESCENT";
-// double fall_alt;
+double fall_alt;
 unsigned int count = 0;
 unsigned int ldr_count = 0;
 unsigned int separatedCount = 0;
 unsigned int silenceCount = 0;
 unsigned int descentCount = 0;
 int LED_PIN;
+
 void setup() {
+
         Serial.begin(9600);
         Wire.begin(); // join i2c bus (address optional for master)
         lid_servo.attach(servoPin); // Servonun sinyal alacagi pin numarasini belirliyor.
@@ -87,13 +90,16 @@ void setup() {
         // Initialize a new chip by turning off write protection and clearing the
         // clock halt flag. These methods needn't always be called. See the DS1302
         // datasheet for details.
-        rtc.writeProtect(false);
+        // TODO: writeProtect yarismadan once false yapilacak
+        rtc.writeProtect(true);
         rtc.halt(false);
         // Make a new time object to set the date and time.
         // Sunday, September 22, 2013 at 01:38:50.
         Time t(2017, 5, 26, 00, 00, 00, Time::kSunday);
         // Set the time and date on the chip.
         rtc.time(t);
+        // TODO: Sayac yarismadan once sifirlanacak
+        // upCount(0);
 
         // State kismi icin veri BOOT'da oldugumuzu gosteren veri gonderimi yapiliyor.
         count++;
@@ -149,10 +155,10 @@ void loop() {
                         descentCount++;
                         servoOpen();
                         STATE = "OPENLID";
-                } /*else if (getAltitude() < 140 && lid_servo.read() >= 120) { // TODO: 390 metre ve servo acik olmadigi zaman descenB yi calistirmak gerekiyor
-                     descentB(fall_alt);
-                     STATE = "PLAN-B";
-                     }*/
+                } else if (getAltitude() < 400 && lid_servo.read() >= 120) { // TODO: 400 metre ve servo acik olmadigi zaman descenB yi calistirmak gerekiyor
+                        descentB(fall_alt);
+                        STATE = "PLAN-B";
+                }
 
                 count++;
                 // Veriyi telemetri ile ground station a gonderdiyor
